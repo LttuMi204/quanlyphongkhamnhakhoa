@@ -112,7 +112,6 @@ CREATE TABLE NhanVien (
     REFERENCES LoaiNhanVien(MaLoaiNV)
 );
 
--- 7. PHÂN QUYỀN
 CREATE TABLE PhanQuyen (
     MaPhanQuyen INT IDENTITY(1,1) PRIMARY KEY,
     MaLoaiNV INT NOT NULL,
@@ -169,7 +168,6 @@ CREATE TABLE GheNhaKhoa (
     MoTa NVARCHAR(500)
 );
 
--- 11. LỊCH HẸN
 CREATE TABLE LichHen (
     MaLichHen INT IDENTITY(1,1) PRIMARY KEY,
     MaTaiKhoanDatLich INT NULL,
@@ -224,7 +222,6 @@ CONSTRAINT CHK_LichHen_GioHen_Valid
     )
 );
 
--- 12. LỊCH LÀM VIỆC
 CREATE TABLE LichLamViec (
     MaLich INT IDENTITY(1,1) PRIMARY KEY,
     MaNhanVien INT NOT NULL,
