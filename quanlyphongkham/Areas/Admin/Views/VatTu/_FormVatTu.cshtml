@@ -1,0 +1,82 @@
+﻿@model quanlyphongkham.Models.VatTu
+@{
+    var isEdit = Model.MaVatTu > 0;
+}
+
+<form asp-action="SaveVatTu" id="formVatTu">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaVatTu" />
+
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <label class="form-label fw-bold">Tên vật tư <span class="text-danger">*</span></label>
+            <input asp-for="TenVatTu" class="form-control rounded-pill" required />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Loại vật tư</label>
+            <select asp-for="LoaiVatTu" class="form-select rounded-pill">
+                <option value="Thuốc men">Thuốc men</option>
+                <option value="Dụng cụ">Dụng cụ</option>
+                <option value="Vật tư tiêu hao">Vật tư tiêu hao</option>
+                <option value="Khác">Khác</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Đơn vị tính</label>
+            <input asp-for="DonViTinh" class="form-control rounded-pill" placeholder="VD: Cái, Hộp, Viên..." />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold text-danger">Ngưỡng tồn tối thiểu</label>
+            <input asp-for="SoLuongToiThieu" type="number" class="form-control rounded-pill" />
+            <small class="text-muted">Hệ thống sẽ báo đỏ nếu tồn kho dưới mức này.</small>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Hạn sử dụng</label>
+            <input asp-for="HanSuDung" type="date" class="form-control rounded-pill" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Nhà cung cấp</label>
+        <input asp-for="NhaCungCap" class="form-control rounded-pill" />
+    </div>
+
+    <div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu thông tin</button>
+    </div>
+</form>
+
+<script>
+    $('#formVatTu').submit(function (e) {
+        e.preventDefault();
+        var form = $(this);
+
+        $.ajax({
+            type: "POST",
+            url: form.attr('action'),
+            data: form.serialize(),
+            success: function (res) {
+                if (res.success) {
+                    toastr.success(res.message);
+                    $('#khoModal').modal('hide');
+
+                    // Kiểm tra xem người dùng đang đứng ở Tab nào để load lại dữ liệu cho đúng
+                    if ($('#nhap-kho-tab').hasClass('active')) {
+                        loadNhapKho(); // Load lại danh sách chọn ở Tab Nhập kho
+                    } else {
+                        loadDSVatTu(); // Load lại bảng ở Tab Danh mục
+                    }
+                } else {
+                    $('#khoModalBody').html(res);
+                }
+            }
+        });
+    });
+</script>

@@ -1,0 +1,26 @@
+﻿@model IEnumerable<quanlyphongkham.Models.BenhNhan>
+
+@if (Model != null && Model.Any())
+{
+    <div class="list-group list-group-flush border-top mt-2 custom-scroll" style="max-height: 110px; overflow-y: auto;">
+        @foreach (var bn in Model)
+        {
+            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-1 bg-transparent py-2">
+                <div>
+                    <div class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">@bn.HoTen</div>
+                    <small class="text-muted"><i class="fas fa-phone-alt me-1"></i>@bn.SoDienThoai</small>
+                </div>
+                <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="viewChiTiet(@bn.MaBenhNhan)" title="Xem hồ sơ bệnh án">
+                    <i class="fas fa-file-medical"></i> Xem
+                </button>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="text-center py-3 text-muted">
+        <i class="fas fa-search-minus fa-2x mb-2 opacity-25"></i>
+        <p class="mb-0 small">Không tìm thấy bệnh nhân nào phù hợp!</p>
+    </div>
+}

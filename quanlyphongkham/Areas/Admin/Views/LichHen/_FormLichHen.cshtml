@@ -1,0 +1,919 @@
+﻿@* _FormLichHen.cshtml - ĐÃ FIX: checkTimeLimits() hoạt động đúng cả Create & Edit *@
+@model quanlyphongkham.Models.LichHen
+
+@{
+    var isEdit = Model?.MaLichHen > 0;
+
+    var trangThaiHienTai = Model?.TrangThai;
+    if (isEdit && Model?.NgayHen.Date < DateTime.Today && trangThaiHienTai != "Hủy")
+    {
+        trangThaiHienTai = "Đã khám";
+    }
+
+    bool isCanceled = trangThaiHienTai == "Hủy";
+    bool isCompleted = trangThaiHienTai == "Đã khám";
+    bool isReadOnly = isCanceled || isCompleted;
+}
+
+<style>
+    .list-box-fixed {
+        min-height: 80px;
+        max-height: 180px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 8px;
+    }
+
+    .item-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: 0.2s;
+        margin-bottom: 6px;
+        background: white;
+        font-size: 13px;
+    }
+
+        .item-card:hover:not(.full):not(.bao-tri) {
+            border-color: #4361ee;
+            background: #f0f4ff;
+        }
+
+        .item-card.selected {
+            border-color: #4361ee;
+            background: #eef2ff;
+            font-weight: bold;
+            color: #084298;
+        }
+
+        .item-card.full {
+            opacity: 0.75;
+            cursor: pointer;
+            border-color: #fca5a5;
+            background: #fff5f5;
+        }
+
+        .item-card.bao-tri {
+            opacity: 0.6;
+            cursor: not-allowed;
+            border-color: #f87171;
+            background: #fef2f2;
+        }
+
+    .override-zone {
+        background: #fff7ed;
+        border: 1px dashed #fb923c;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 8px;
+    }
+
+    .form-control:disabled,
+    .form-select:disabled,
+    .form-control[readonly] {
+        background: #f3f4f6;
+        opacity: 0.8;
+        cursor: not-allowed;
+    }
+</style>
+
+<form asp-action="@(isEdit ? "EditPartial" : "CreatePartial")"
+      asp-controller="LichHen"
+      asp-area="Admin"
+      method="post"
+      id="formLichHen">
+
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    @if (isEdit)
+    {
+        <input type="hidden" name="MaLichHen" value="@Model!.MaLichHen" />
+        <input type="hidden" id="hidMaBenhNhan" name="MaBenhNhan" value="@Model!.MaBenhNhan" />
+        <input type="hidden" id="hidIsNewPatient" name="IsNewPatient" value="false" />
+    }
+    else
+    {
+        <input type="hidden" id="hidMaBenhNhan" value="" />
+        <input type="hidden" id="hidIsNewPatient" name="IsNewPatient" value="true" />
+    }
+
+    <input type="hidden" id="hidMaBacSi" name="MaBacSi" value="@Model?.MaBacSi" />
+    <input type="hidden" id="hidMaGhe" name="MaGhe" value="@Model?.MaGhe" />
+    <input type="hidden" name="MaDichVu" value="@(Model?.MaDichVu > 0 ? Model!.MaDichVu : 0)" />
+
+    @if (isReadOnly)
+    {
+        <div class="alert alert-warning py-2 mb-3 fw-bold border-warning text-dark shadow-sm">
+            <i class="fas fa-lock text-warning me-2"></i>
+            Lịch hẹn này ở trạng thái "@trangThaiHienTai". Chỉ được xem, không thể chỉnh sửa!
+        </div>
+    }
+
+    <div class="row">
+
+       @*-- ========== CỘT TRÁI: BỆNH NHÂN ========== *@
+        <div class="col-md-6 border-end">
+            <h6 class="text-primary border-bottom pb-2 mb-3">
+                <i class="fas fa-user-injured me-2"></i>Thông tin bệnh nhân
+            </h6>
+
+            @if (!isEdit)
+            {
+                <div class="d-flex gap-2 mb-3">
+                    <button type="button" class="btn btn-primary btn-sm px-4 fw-bold active"
+                            id="btnKhachMoi" onclick="setKhachMode('Moi')">
+                        Khách Mới
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm px-4 fw-bold"
+                            id="btnKhachCu" onclick="setKhachMode('Cu')">
+                        Khách Cũ
+                    </button>
+                </div>
+
+                <div id="zoneKhachMoi">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                        <input type="text" id="inpHoTenMoi" name="HoTenBN" class="form-control"
+                               placeholder="Nhập Họ Tên..." autocomplete="off" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
+                        <input type="text" id="inpSdtMoi" name="SoDienThoaiBN" class="form-control"
+                               placeholder="09xxxxxxxx" autocomplete="off" />
+                    </div>
+                    <div id="autoDetectAlert" class="alert alert-success py-2 px-3 small fw-bold mt-2 shadow-sm"
+                         style="display:none;"></div>
+                </div>
+
+                <div id="zoneKhachCu" style="display:none;" class="mb-3">
+                    <label class="form-label fw-bold">Tìm kiếm bệnh nhân <span class="text-danger">*</span></label>
+                    <select id="selKhachCu" name="MaBenhNhan" class="form-select w-100">
+                        <option value="">-- Tìm Tên (Số điện thoại) --</option>
+                        @if (ViewBag.DanhSachBenhNhan != null)
+                        {
+                            foreach (var bn in ViewBag.DanhSachBenhNhan)
+                            {
+                                <option value="@bn.Value">@bn.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info py-2 small mb-3 fw-bold bg-opacity-10 border-info text-info">
+                    <i class="fas fa-info-circle me-1"></i> Đang cập nhật: Không thể thay đổi người bệnh.
+                </div>
+            }
+
+            <div id="blockBNInfo" class="bg-light border rounded p-3 mb-4 shadow-sm"
+                 style="@(isEdit ? "display:block;" : "display:none;")">
+                <div class="row g-2 small">
+                    <div class="col-md-6">
+                        <span class="text-muted">Họ tên:</span>
+                        <strong id="lblHoTen" class="text-primary fs-6">@(Model?.BenhNhan?.HoTen)</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted">SĐT:</span>
+                        <strong id="lblSdt" class="text-dark">@(Model?.BenhNhan?.SoDienThoai)</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted">Giới tính:</span>
+                        <strong id="lblGioiTinh">@(Model?.BenhNhan?.GioiTinh ?? "---")</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted">Tài khoản:</span>
+                        <strong id="lblTaiKhoan" class="text-success">
+                            @(Model?.BenhNhan?.MaTaiKhoan != null ? "Đã liên kết" : "Không có")
+                        </strong>
+                    </div>
+                    <div class="col-md-12">
+                        <span class="text-muted">Địa chỉ:</span>
+                        <strong id="lblDiaChi">@(Model?.BenhNhan?.DiaChi ?? "---")</strong>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="text-danger border-bottom pb-2 mb-3 mt-2">
+                <i class="fas fa-notes-medical me-2"></i>Ghi chú y tế / Yêu cầu
+            </h6>
+            <div class="mb-3">
+                <textarea name="GhiChu" class="form-control" rows="3"
+                          placeholder="Ghi chú bệnh lý, yêu cầu đặc biệt..."
+                @(isReadOnly ? "disabled" : "")>@Model?.GhiChu</textarea>
+            </div>
+        </div>
+
+       @*-- ========== CỘT PHẢI: KẾ HOẠCH KHÁM ========== *@
+        <div class="col-md-6">
+            <h6 class="text-info border-bottom pb-2 mb-3">
+                <i class="fas fa-calendar-check me-2"></i>Kế hoạch Khám
+            </h6>
+
+            @if (!isEdit)
+            {
+                <div class="d-flex gap-3 mb-3 p-2 bg-light rounded border">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="radio" name="LoaiLich"
+                               id="modeMoi" value="Moi" checked>
+                        <label class="form-check-label fw-bold text-success" for="modeMoi">
+                            📅 Lịch hẹn mới
+                        </label>
+                    </div>
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="radio" name="LoaiLich"
+                               id="modeBoSung" value="BoSung">
+                        <label class="form-check-label fw-bold text-warning" for="modeBoSung">
+                            📋 Lịch bổ sung (quá khứ)
+                        </label>
+                    </div>
+                </div>
+            }
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Ngày khám <span class="text-danger">*</span></label>
+                    <input type="date" id="inputNgayHen" name="NgayHen" class="form-control fw-bold"
+                           value="@Model?.NgayHen.ToString("yyyy-MM-dd")"
+                           required @(isReadOnly ? "disabled" : "") />
+
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Ca khám <span class="text-danger">*</span></label>
+                    <div class="d-flex gap-3 mt-2">
+                        <div class="form-check">
+                            @if (isEdit)
+                            {
+                                @if (Model?.GioHen.Hours < 12)
+                                {
+                                    <input class="form-check-input ca-radio" type="radio"
+                                           name="CaKhamRadio" id="caSang" value="Sáng"
+                                           checked @(isReadOnly ? "disabled" : "") required>
+                                }
+                                else
+                                {
+                                    <input class="form-check-input ca-radio" type="radio"
+                                           name="CaKhamRadio" id="caSang" value="Sáng"
+                                    @(isReadOnly ? "disabled" : "") required>
+                                }
+                            }
+                            else
+                            {
+                                <input class="form-check-input ca-radio" type="radio"
+                                       name="CaKhamRadio" id="caSang" value="Sáng"
+                                       checked @(isReadOnly ? "disabled" : "") required>
+                            }
+                            <label class="form-check-label" for="caSang">🌤 Sáng</label>
+                        </div>
+                        <div class="form-check">
+                            @if (isEdit)
+                            {
+                                @if (Model?.GioHen.Hours >= 12)
+                                {
+                                    <input class="form-check-input ca-radio" type="radio"
+                                           name="CaKhamRadio" id="caChieu" value="Chiều"
+                                           checked @(isReadOnly ? "disabled" : "")>
+                                }
+                                else
+                                {
+                                    <input class="form-check-input ca-radio" type="radio"
+                                           name="CaKhamRadio" id="caChieu" value="Chiều"
+                                    @(isReadOnly ? "disabled" : "")>
+                                }
+                            }
+                            else
+                            {
+                                <input class="form-check-input ca-radio" type="radio"
+                                       name="CaKhamRadio" id="caChieu" value="Chiều"
+                                @(isReadOnly ? "disabled" : "")>
+                            }
+                            <label class="form-check-label" for="caChieu">🌆 Chiều</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="msgHetLuot" class="alert alert-danger py-2 small fw-bold mb-3" style="display:none;">
+                <i class="fas fa-ban me-1"></i> Đã hết lượt khám trong ngày.
+                Tích xác nhận bên dưới để tiếp tục.
+            </div>
+
+           @*-- ✅ FIX: Luôn hiển thị được cho cả Create & Edit (display:none ban đầu, JS sẽ toggle) *@
+            <div id="overrideTimeDiv" class="alert alert-warning py-2 small mb-3" style="display:none;">
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" id="overrideTimeCheckbox"
+                           name="overrideTimeCheckbox" value="true" />
+                    <label class="form-check-label fw-bold text-danger" for="overrideTimeCheckbox">
+                        ⚡ <span id="ghiChuThoiGian"></span> — Xác nhận NHẬN lịch?
+                    </label>
+                </div>
+            </div>
+
+           @*-- BÁC SĨ & GHẾ *@
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Bác sĩ (Tùy chọn)</label>
+
+                    @if (isEdit && ViewBag.BacSiDaChon != null)
+                    {
+                        <div class="alert alert-info py-2 px-3 mb-2 small fw-bold"
+                             style="background-color:#e7f3ff;border:1px solid #b3d9ff;">
+                            <i class="fas fa-check-circle text-info me-2"></i>
+                            <strong>Bác sĩ đã chọn:</strong>
+                            BS. @ViewBag.BacSiDaChon.tenBacSi - @ViewBag.BacSiDaChon.chuyenKhoa
+                        </div>
+                    }
+
+                    <div id="divBacSi" class="list-box-fixed custom-scroll">
+                        <span class="text-muted small">
+                            <i class="fas fa-info-circle"></i> Chọn ngày &amp; ca...
+                        </span>
+                    </div>
+
+                    <div id="zoneOverrideBacSi" class="override-zone" style="display:none;">
+                        <div class="form-check mb-0">
+                            <input type="checkbox" class="form-check-input"
+                                   id="chkOverrideBacSi" name="chkOverrideBacSi" value="true" />
+                            <label class="form-check-label text-danger small fw-bold" for="chkOverrideBacSi">
+                                ⚡ BS đầy lịch — Cho phép chèn lịch vượt tải?
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Ghế (Tùy chọn)</label>
+
+                    @if (isEdit && ViewBag.GheDaChon != null)
+                    {
+                        <div class="alert alert-info py-2 px-3 mb-2 small fw-bold"
+                             style="background-color:#e7f3ff;border:1px solid #b3d9ff;">
+                            <i class="fas fa-check-circle text-info me-2"></i>
+                            <strong>Ghế đã chọn:</strong> @ViewBag.GheDaChon.TenGhe
+                            @if (!string.IsNullOrEmpty(ViewBag.GheDaChon.ViTri))
+                            {
+                                <span class="text-muted">(Vị trí: @ViewBag.GheDaChon.ViTri)</span>
+                            }
+                        </div>
+                    }
+
+                    <div id="divGhe" class="list-box-fixed custom-scroll">
+                        <span class="text-muted small">
+                            <i class="fas fa-info-circle"></i> Chọn ngày &amp; ca...
+                        </span>
+                    </div>
+
+                    <div id="zoneOverrideGhe" class="override-zone" style="display:none;">
+                        <div class="form-check mb-0">
+                            <input type="checkbox" class="form-check-input"
+                                   id="chkOverrideGhe" name="chkOverrideGhe" value="true" />
+                            <label class="form-check-label text-danger small fw-bold" for="chkOverrideGhe">
+                                ⚡ Ghế đầy lịch — Cho phép chèn lịch vượt tải?
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+           @*-- TRẠNG THÁI *@
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label class="form-label fw-bold">
+                        Trạng thái lịch <span class="text-danger">*</span>
+                    </label>
+                    <select name="TrangThai" id="selTrangThai"
+                            class="form-select fw-bold bg-light"
+                    @(isReadOnly ? "disabled" : "")>
+
+                        @if (!isEdit)
+                        {
+                            <option value="" disabled>-- Vui lòng chọn Trạng thái --</option>
+                            <option value="Đã xác nhận" selected>✅ Đã xác nhận</option>
+                            <option value="Đã khám">🩺 Đã khám (Bổ sung)</option>
+                        }
+                        else
+                        {
+                            <option value="" disabled>-- Vui lòng chọn Trạng thái --</option>
+
+                            @if (trangThaiHienTai == "Chờ xác nhận")
+                            {
+                                <option value="Chờ xác nhận" selected>⏳ Chờ xác nhận</option>
+                            }
+                            else
+                            {
+                                <option value="Chờ xác nhận">⏳ Chờ xác nhận</option>
+                            }
+
+                            @if (trangThaiHienTai == "Đã xác nhận")
+                            {
+                                <option value="Đã xác nhận" selected>✅ Đã xác nhận</option>
+                            }
+                            else
+                            {
+                                <option value="Đã xác nhận">✅ Đã xác nhận</option>
+                            }
+
+                            @if (trangThaiHienTai == "Đã khám")
+                            {
+                                <option value="Đã khám" selected>🩺 Đã khám</option>
+                            }
+                            else
+                            {
+                                <option value="Đã khám">🩺 Đã khám</option>
+                            }
+                        }
+                    </select>
+                    <div id="msgTrangThaiRequired" class="text-danger small mt-1 fw-bold"
+                         style="display:none;">
+                        <i class="fas fa-exclamation-circle me-1"></i>Vui lòng chọn Trạng thái xác nhận!
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Đóng
+        </button>
+
+        @if (isEdit && !isReadOnly)
+        {
+            <button type="button" class="btn btn-danger"
+                    onclick="huyLichHenNgay(@Model!.MaLichHen)">
+                <i class="fas fa-ban me-1"></i>Hủy lịch này
+            </button>
+        }
+
+        @if (!isReadOnly)
+        {
+            <button type="submit" id="btnSubmitForm" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i>@(isEdit ? "Cập nhật Lịch hẹn" : "Lưu hồ sơ mới")
+            </button>
+        }
+    </div>
+</form>
+
+
+<script>
+    $(document).ready(function () {
+        const isEdit = @isEdit.ToString().ToLower();
+        const isReadOnly = @isReadOnly.ToString().ToLower();
+
+        // ✅ STATE: Lưu BS/Ghế đã chọn để restore sau reload
+        let state = {
+            maBacSi: '@(Model?.MaBacSi?.ToString() ?? "")',
+            isBacSiFull: false,
+            maGhe: '@(Model?.MaGhe?.ToString() ?? "")',
+            isGheFull: false
+        };
+
+        // ===================================================
+        // KHÁCH MỚI / CŨ
+        // ===================================================
+        if ($('#selKhachCu').length) {
+            $('#selKhachCu').select2({
+                dropdownParent: $('#mainModal'), width: '100%'
+            }).on('change', function () {
+                let id = $(this).val();
+                if (id && !$('#btnKhachMoi').hasClass('active')) {
+                    if ($('#hidMaBenhNhan').attr('name') !== 'MaBenhNhan') {
+                        $('#hidMaBenhNhan').attr('name', 'MaBenhNhan');
+                    }
+                    $('#hidMaBenhNhan').val(id);
+                }
+                if (id) loadThongTinBN(id);
+                else $('#blockBNInfo').hide();
+            });
+        }
+
+        window.setKhachMode = function (mode) {
+            if (mode === 'Moi') {
+                $('#btnKhachMoi').addClass('active btn-primary').removeClass('btn-outline-primary');
+                $('#btnKhachCu').removeClass('active btn-primary').addClass('btn-outline-primary');
+                $('#zoneKhachMoi').show(); $('#zoneKhachCu').hide();
+                $('#hidMaBenhNhan').val('0').removeAttr('name');
+                $('#hidIsNewPatient').val('true');
+            } else {
+                $('#btnKhachCu').addClass('active btn-primary').removeClass('btn-outline-primary');
+                $('#btnKhachMoi').removeClass('active btn-primary').addClass('btn-outline-primary');
+                $('#zoneKhachCu').show(); $('#zoneKhachMoi').hide();
+                $('#selKhachCu').val('').trigger('change');
+                $('#hidIsNewPatient').val('false');
+            }
+            $('#blockBNInfo, #autoDetectAlert').hide();
+        };
+
+        let typingTimer;
+        $('#inpHoTenMoi, #inpSdtMoi').on('input', function () {
+            clearTimeout(typingTimer);
+            let hoten = $('#inpHoTenMoi').val().trim();
+            let sdt = $('#inpSdtMoi').val().trim();
+            $('#hidMaBenhNhan').val('0').removeAttr('name');
+            $('#blockBNInfo').hide();
+            if (hoten.length > 2 && sdt.length >= 10) {
+                typingTimer = setTimeout(() => {
+                    $.get('/Admin/LichHen/CheckKhachMoi', { hoTen: hoten, sdt: sdt }, function (res) {
+                        if (res.exists) {
+                            $('#autoDetectAlert').html(
+                                '✅ Hệ thống nhận diện đây là khách cũ: <b>' + res.hoTen + '</b>. Lịch sẽ gắn vào hồ sơ này.'
+                            ).show();
+                            $('#hidMaBenhNhan').attr('name', 'MaBenhNhan').val(res.maBenhNhan);
+                            loadThongTinBN(res.maBenhNhan);
+                        } else {
+                            $('#autoDetectAlert').hide();
+                        }
+                    });
+                }, 600);
+            } else {
+                $('#autoDetectAlert').hide();
+            }
+        });
+
+        function loadThongTinBN(id) {
+            $('#hidMaBenhNhan').val(id);
+            $.get('/Admin/LichHen/GetBenhNhanInfo/' + id, function (data) {
+                if (data) {
+                    $('#lblHoTen').text(data.hoTen);
+                    $('#lblSdt').text(data.soDienThoai);
+                    $('#lblGioiTinh').text(data.gioiTinh || '---');
+                    $('#lblTaiKhoan').text(data.maTaiKhoan ? 'Đã liên kết' : 'Không có');
+                    $('#lblDiaChi').text(data.diaChi || '---');
+                    $('#blockBNInfo').fadeIn();
+                }
+            });
+        }
+
+        // ===================================================
+        // LOGIC LOẠI LỊCH (chỉ dùng khi Create)
+        // ===================================================
+        $('input[name="LoaiLich"]').on('change', function () {
+            const mode = $(this).val();
+            const inputNgay = $('#inputNgayHen');
+            let today = new Date();
+            let localISO = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+                .toISOString().split('T')[0];
+
+            if (mode === 'Moi') {
+                inputNgay.attr('min', localISO).removeAttr('max').val(localISO);
+                $('#selTrangThai').val('Đã xác nhận');
+            } else {
+                inputNgay.removeAttr('min');
+                let yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                let yestISO = new Date(yesterday.getTime() - yesterday.getTimezoneOffset() * 60000)
+                    .toISOString().split('T')[0];
+                inputNgay.attr('max', yestISO).val(yestISO);
+                $('#selTrangThai').val('Đã khám');
+                $('#overrideTimeDiv, #msgHetLuot').hide();
+            }
+
+            resetBacSiGheState();
+            checkTimeLimits();
+            loadBacSiGhe();
+        });
+
+        function resetBacSiGheState() {
+            state.maBacSi = ''; state.isBacSiFull = false;
+            state.maGhe = ''; state.isGheFull = false;
+            $('#hidMaBacSi').val(''); $('#hidMaGhe').val('');
+            $('#chkOverrideBacSi').prop('checked', false);
+            $('#chkOverrideGhe').prop('checked', false);
+            $('#zoneOverrideBacSi').hide(); $('#zoneOverrideGhe').hide();
+        }
+
+        // ===================================================
+        // ✅ FIX CHÍNH: checkTimeLimits() — hoạt động cho CẢ Create & Edit
+        //
+        //  Vấn đề cũ:
+        //   1. `if (isReadOnly) return` — chặn hoàn toàn khi readonly (đúng)
+        //   2. `mode` lấy từ radio "LoaiLich" → khi isEdit radio không tồn tại
+        //      → val() = undefined → điều kiện `mode === 'BoSung'` không trigger
+        //      → NHƯNG code sau vẫn chạy, tuy nhiên thực tế vẫn bị block bởi
+        //      `if (isReadOnly)` ở trên, nên Edit editable không bao giờ chạy tới đây.
+        //
+        //  Fix: Tách logic ra rõ ràng:
+        //   - isReadOnly → return sớm (không cần hiển thị gì)
+        //   - isEdit     → luôn dùng mode = 'Moi' (không có BoSung trong Edit)
+        //   - Create     → lấy mode từ radio như cũ
+        // ===================================================
+        function checkTimeLimits() {
+            // Readonly: không cần hiển thị cảnh báo giờ
+            if (isReadOnly) return;
+
+            const ngayVal = $('#inputNgayHen').val();
+            if (!ngayVal) return;
+
+            // ✅ FIX: Khi isEdit = true, radio "LoaiLich" không tồn tại
+            //         → luôn xem như mode = 'Moi' (không có BoSung trong Edit)
+            //         Khi isEdit = false, lấy từ radio như bình thường
+            let mode;
+            if (isEdit) {
+                mode = 'Moi'; // Edit không có BoSung → luôn kiểm tra giờ
+            } else {
+                mode = $('input[name="LoaiLich"]:checked').val() || 'Moi';
+            }
+
+            // Lịch bổ sung (chỉ có trong Create) → bỏ qua kiểm tra giờ
+            if (mode === 'BoSung') {
+                $('#overrideTimeDiv, #msgHetLuot').hide();
+                return;
+            }
+
+            const isOverride = $('#overrideTimeCheckbox').is(':checked');
+            let today = new Date();
+            let isToday = (today.toDateString() === new Date(ngayVal + 'T00:00:00').toDateString());
+
+            if (isToday) {
+                let hour = today.getHours();
+                let dsSang = hour >= 9;   // Qua 9h → khóa ca Sáng
+                let dsChieu = hour >= 16;  // Qua 16h → khóa ca Chiều
+
+                // Làm mờ label ca bị khóa
+                $('#caSang').closest('.form-check').toggleClass('text-muted', dsSang);
+                $('#caChieu').closest('.form-check').toggleClass('text-muted', dsChieu);
+
+                // Hiện "hết lượt" nếu cả 2 ca đều qua giờ VÀ chưa tick override
+                $('#msgHetLuot').toggle(dsSang && dsChieu && !isOverride);
+
+                if (dsSang || dsChieu) {
+                    let txt = [];
+                    if (dsSang) txt.push('Quá 9h (Sáng)');
+                    if (dsChieu) txt.push('Quá 16h (Chiều)');
+                    $('#ghiChuThoiGian').text(txt.join(' & '));
+                    $('#overrideTimeDiv').show(); // ✅ Hiện checkbox xác nhận
+                } else {
+                    $('#overrideTimeDiv').hide();
+                }
+            } else {
+                // Ngày khác hôm nay → bỏ tất cả cảnh báo
+                $('#caSang, #caChieu').closest('.form-check').removeClass('text-muted');
+                $('#overrideTimeDiv, #msgHetLuot').hide();
+            }
+        }
+
+        // ===================================================
+        // RÀNG BUỘC "ĐÃ KHÁM"
+        // ===================================================
+        $('#selTrangThai').on('change', function () {
+            if ($(this).val()) $('#msgTrangThaiRequired').hide();
+
+            if ($(this).val() === 'Đã khám') {
+                let ngayVal = $('#inputNgayHen').val();
+                if (!ngayVal) return;
+                let ngayHen = new Date(ngayVal + 'T00:00:00');
+                let today = new Date(); today.setHours(0, 0, 0, 0);
+
+                if (ngayHen > today) {
+                    toastr.warning("Không thể chuyển 'Đã khám' cho lịch tương lai!");
+                    $(this).val('Đã xác nhận'); return;
+                }
+                if (ngayHen.getTime() === today.getTime()) {
+                    let ca = $('input[name="CaKhamRadio"]:checked').val();
+                    let now = new Date();
+                    let mins = now.getHours() * 60 + now.getMinutes();
+                    if (ca === 'Sáng' && mins < 450) {
+                        toastr.warning("Chưa tới 07:30 sáng!");
+                        $(this).val('Đã xác nhận'); return;
+                    }
+                    if (ca === 'Chiều' && mins < 840) {
+                        toastr.warning("Chưa tới 14:00 chiều!");
+                        $(this).val('Đã xác nhận'); return;
+                    }
+                }
+            }
+        });
+
+        // ===================================================
+        // LOAD BÁC SĨ & GHẾ — CÓ RESTORE STATE
+        // ===================================================
+        function loadBacSiGhe() {
+            if (isReadOnly) return;
+            const ngay = $('#inputNgayHen').val();
+            const ca = $('input[name="CaKhamRadio"]:checked').val();
+            if (!ngay || !ca) return;
+
+            // --- BÁC SĨ ---
+            $('#divBacSi').html('<div class="text-center py-2"><i class="fas fa-spinner fa-spin text-primary"></i> Đang tải...</div>');
+            $.get('/Admin/LichHen/GetBacSiTheoCa', { ngayHen: ngay, caKham: ca }, function (data) {
+                $('#divBacSi').empty();
+                if (!data || data.length === 0) {
+                    $('#divBacSi').html('<span class="text-danger small"><i class="fas fa-info-circle me-1"></i>Không có BS trực ca này.</span>');
+                    if (state.maBacSi) $('#zoneOverrideBacSi').show();
+                    return;
+                }
+
+                let foundBS = false;
+                data.forEach(function (bs) {
+                    let isFull = !bs.conTrong;
+                    let isSelected = (String(bs.maBacSi) === String(state.maBacSi));
+                    let div = $('<div class="item-card ' + (isFull ? 'full' : '') + ' ' + (isSelected ? 'selected' : '') + ' mb-2">' +
+                        '<b>👨‍⚕️ ' + bs.tenBacSi + '</b> ' +
+                        '<span class="badge ms-1 ' + (isFull ? 'bg-danger' : 'bg-success') + ' bg-opacity-75 text-white small">' + bs.trangThai + '</span>' +
+                        '</div>');
+
+                    div.click(function () {
+                        $('#divBacSi .item-card').removeClass('selected');
+                        $(this).addClass('selected');
+                        state.maBacSi = bs.maBacSi;
+                        state.isBacSiFull = isFull;
+                        $('#hidMaBacSi').val(bs.maBacSi);
+                        if (isFull) { $('#zoneOverrideBacSi').show(); }
+                        else { $('#zoneOverrideBacSi').hide(); $('#chkOverrideBacSi').prop('checked', false); }
+                    });
+
+                    $('#divBacSi').append(div);
+
+                    if (isSelected) {
+                        foundBS = true;
+                        state.isBacSiFull = isFull;
+                        $('#hidMaBacSi').val(bs.maBacSi);
+                        if (isFull) $('#zoneOverrideBacSi').show();
+                    }
+                });
+
+                if (!foundBS && state.maBacSi) {
+                    state.maBacSi = ''; state.isBacSiFull = false;
+                    $('#hidMaBacSi').val('');
+                    $('#zoneOverrideBacSi').hide();
+                    $('#chkOverrideBacSi').prop('checked', false);
+                }
+            });
+
+            // --- GHẾ ---
+            $('#divGhe').html('<div class="text-center py-2"><i class="fas fa-spinner fa-spin text-primary"></i> Đang tải...</div>');
+            $.get('/Admin/LichHen/GetDanhSachGheTrong', { ngayHen: ngay, caKham: ca }, function (data) {
+                $('#divGhe').empty();
+                if (!data || data.length === 0) {
+                    $('#divGhe').html('<span class="text-danger small"><i class="fas fa-info-circle me-1"></i>Không có ghế.</span>');
+                    if (state.maGhe) $('#zoneOverrideGhe').show();
+                    return;
+                }
+
+                let foundGhe = false;
+                data.forEach(function (g) {
+                    let isBaoTri = g.dangBaoTri;
+                    let isFull = !g.conTrong && !isBaoTri;
+                    let isSelected = (String(g.maGhe) === String(state.maGhe));
+                    let icon = isBaoTri ? '🔧' : '🪑';
+
+                    let div = $('<div class="item-card ' +
+                        (isFull ? 'full' : '') + ' ' +
+                        (isBaoTri ? 'bao-tri' : '') + ' ' +
+                        (isSelected ? 'selected' : '') + ' mb-2">' +
+                        '<b>' + icon + ' ' + g.tenGhe + '</b> ' +
+                        '<span class="ms-1 small text-muted">(' + g.trangThai + ')</span>' +
+                        '</div>');
+
+                    if (isBaoTri) {
+                        div.click(function () {
+                            toastr.warning('Ghế ' + g.tenGhe + ' đang bảo trì! Không được xếp lịch.');
+                        });
+                    } else {
+                        div.click(function () {
+                            $('#divGhe .item-card').removeClass('selected');
+                            $(this).addClass('selected');
+                            state.maGhe = g.maGhe;
+                            state.isGheFull = isFull;
+                            $('#hidMaGhe').val(g.maGhe);
+                            if (isFull) { $('#zoneOverrideGhe').show(); }
+                            else { $('#zoneOverrideGhe').hide(); $('#chkOverrideGhe').prop('checked', false); }
+                        });
+                    }
+
+                    $('#divGhe').append(div);
+
+                    if (isSelected && !isBaoTri) {
+                        foundGhe = true;
+                        state.isGheFull = isFull;
+                        $('#hidMaGhe').val(g.maGhe);
+                        if (isFull) $('#zoneOverrideGhe').show();
+                    }
+                });
+
+                if (!foundGhe && state.maGhe) {
+                    state.maGhe = ''; state.isGheFull = false;
+                    $('#hidMaGhe').val('');
+                    $('#zoneOverrideGhe').hide();
+                    $('#chkOverrideGhe').prop('checked', false);
+                }
+            });
+        }
+
+        // Bind events
+        $('#inputNgayHen').on('change', function () { checkTimeLimits(); loadBacSiGhe(); });
+        $('.ca-radio').on('change', function () { checkTimeLimits(); loadBacSiGhe(); });
+        $('#overrideTimeCheckbox').on('change', checkTimeLimits);
+
+        // ===================================================
+        // NÚT HỦY LỊCH
+        // ===================================================
+        window.huyLichHenNgay = function (id) {
+            if (confirm('Bạn có chắc muốn hủy lịch khám này?')) {
+                $.post('/Admin/LichHen/Delete', {
+                    id: id,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                }, function (res) {
+                    if (res.success) {
+                        $('#mainModal').modal('hide');
+                        toastr.success(res.message);
+                        if (typeof loadLichTuan === 'function') loadLichTuan();
+                        if (typeof loadDanhSachLich === 'function') loadDanhSachLich();
+                    } else { toastr.error(res.message); }
+                });
+            }
+        };
+
+        // ===================================================
+        // FORM SUBMIT
+        // ===================================================
+        $('#formLichHen').on('submit', function (e) {
+            e.preventDefault();
+
+            // Validate trạng thái
+            let trangThai = $('#selTrangThai').val();
+            if (!trangThai) {
+                $('#msgTrangThaiRequired').show();
+                toastr.warning("Vui lòng chọn Trạng thái xác nhận!");
+                $('#selTrangThai').focus();
+                return false;
+            }
+            $('#msgTrangThaiRequired').hide();
+
+            // Validate bệnh nhân
+            let maBN = $('#hidMaBenhNhan').val();
+            if (!isEdit && (!maBN || maBN == '0') && !$('#btnKhachMoi').hasClass('active')) {
+                toastr.warning('Vui lòng chọn khách hàng cũ!'); return;
+            }
+            if (!isEdit && $('#btnKhachMoi').hasClass('active') &&
+                (!$('#inpHoTenMoi').val() || !$('#inpSdtMoi').val())) {
+                toastr.warning('Vui lòng nhập Tên và SĐT cho khách mới!'); return;
+            }
+
+            // Validate vượt quyền BS/Ghế
+            if ($('#zoneOverrideBacSi').is(':visible') && !$('#chkOverrideBacSi').is(':checked')) {
+                toastr.error('BS đầy lịch! Tích "Cho phép chèn lịch vượt tải" để tiếp tục.'); return;
+            }
+            if ($('#zoneOverrideGhe').is(':visible') && !$('#chkOverrideGhe').is(':checked')) {
+                toastr.error('Ghế đầy lịch! Tích "Cho phép chèn lịch vượt tải" để tiếp tục.'); return;
+            }
+
+            // ✅ FIX: Validate giờ — áp dụng cho CẢ Create mode Moi VÀ Edit
+            let mode = isEdit ? 'Moi' : ($('input[name="LoaiLich"]:checked').val() || 'Moi');
+            if (mode !== 'BoSung') {
+                let ngay = $('#inputNgayHen').val();
+                let today = new Date();
+                let isToday = (today.toDateString() === new Date(ngay + 'T00:00:00').toDateString());
+                if (isToday && !$('#overrideTimeCheckbox').is(':checked')) {
+                    let ca = $('input[name="CaKhamRadio"]:checked').val();
+                    let hour = today.getHours();
+                    if ((ca === 'Sáng' && hour >= 9) || (ca === 'Chiều' && hour >= 16)) {
+                        toastr.error('Đã quá giờ nhận lịch. Vui lòng tích ⚡ "Xác nhận NHẬN lịch" để tiếp tục.');
+                        return false;
+                    }
+                }
+            }
+
+            let btn = $('#btnSubmitForm');
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...');
+
+            $.ajax({
+                type: 'POST', url: $(this).attr('action'), data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        $('#mainModal').modal('hide');
+                        toastr.success(res.message);
+                        if (typeof loadLichTuan === 'function') loadLichTuan();
+                        if (typeof loadDanhSachLich === 'function') loadDanhSachLich();
+                    } else {
+                        toastr.error(res.message);
+                        btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i>Thử lại');
+                    }
+                },
+                error: function () {
+                    toastr.error('Lỗi máy chủ!');
+                    btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i>Thử lại');
+                }
+            });
+        });
+
+        // ===================================================
+        // ✅ KHỞI TẠO
+        // ===================================================
+        if (!isEdit) {
+            setKhachMode('Moi');
+            $('#modeMoi').prop('checked', true).trigger('change');
+        } else {
+            // ✅ FIX: Với Edit → gọi checkTimeLimits() ngay khi load
+            //         để hiển thị cảnh báo giờ nếu lịch là hôm nay
+            loadBacSiGhe();
+            checkTimeLimits(); // <-- THÊM DÒNG NÀY
+        }
+    });
+
+</script>

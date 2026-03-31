@@ -1,0 +1,51 @@
+﻿@model IEnumerable<quanlyphongkham.Models.VatTu>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-boxes me-2"></i>Danh mục vật tư</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tên vật tư</th>
+                        <th>Loại</th>
+                        <th class="text-center">Tồn kho</th>
+                        <th class="text-center">ĐVT</th>
+                        <th class="text-end">Giá nhập (Gần nhất)</th>
+                        <th class="text-center" width="160">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        bool isLow = item.SoLuongTon <= item.SoLuongToiThieu;
+                        <tr>
+                            <td><strong>@item.TenVatTu</strong></td>
+                            <td><span class="badge bg-secondary">@item.LoaiVatTu</span></td>
+                            <td class="text-center fw-bold @(isLow ? "text-danger" : "text-success")">
+                                @item.SoLuongTon
+                            </td>
+                            <td class="text-center">@item.DonViTinh</td>
+                            <td class="text-end text-primary fw-bold">
+                                @(item.GiaNhap?.ToString("N0") ?? "0") đ
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-success" onclick="switchAndNhapKho(@item.MaVatTu)" title="Nhập hàng">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="openFormVatTu(@item.MaVatTu)" title="Sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteVatTu(@item.MaVatTu, '@item.TenVatTu')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

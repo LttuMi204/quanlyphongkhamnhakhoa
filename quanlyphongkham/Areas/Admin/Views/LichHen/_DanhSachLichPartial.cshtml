@@ -1,0 +1,281 @@
+﻿@model IEnumerable<quanlyphongkham.Models.LichHen>
+
+@{
+    var searchName = ViewBag.SearchName as string ?? "";
+    DateTime today = DateTime.Today;
+
+    // TAB 1: HIỆN TẠI & TƯƠNG LAI (Ngày >= Hôm nay)
+    var lichHienTaiTuongLai = Model.Where(x => x.NgayHen.Date >= today)
+                                   .OrderBy(x => x.NgayHen.Date)
+                                   .ThenBy(x => x.GioHen).ToList();
+
+    // TAB 2: QUÁ KHỨ (Ngày < Hôm nay)
+    var lichQuaKhu = Model.Where(x => x.NgayHen.Date < today)
+                          .OrderByDescending(x => x.NgayHen.Date)
+                          .ThenByDescending(x => x.GioHen).ToList();
+}
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header py-3 bg-white d-flex justify-content-between align-items-center flex-wrap">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-list-check me-2"></i>Danh sách lịch khám</h6>
+    </div>
+
+    <div class="card-body">
+        <form id="formFilterLich" class="row g-2 mb-3" onsubmit="searchLichForm(event)">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" id="searchName" name="searchName" class="form-control"
+                           placeholder="Tìm theo họ tên BN, SĐT, Tên bác sĩ..."
+                           value="@searchName" oninput="debounceSearchLich()" autocomplete="off" />
+
+                    <button type="submit" class="btn btn-info text-white">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <ul class="nav nav-tabs border-bottom-0 mb-3" id="lichListTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active fw-bold text-primary" data-bs-toggle="tab" data-bs-target="#tab-tuonglai">
+                    <i class="fas fa-calendar-day me-2"></i>Hiện tại & Tương lai
+                    <span class="badge bg-primary ms-1">@lichHienTaiTuongLai.Count</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold text-secondary" data-bs-toggle="tab" data-bs-target="#tab-quakhu">
+                    <i class="fas fa-history me-2"></i>Quá khứ
+                    <span class="badge bg-secondary ms-1">@lichQuaKhu.Count</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content border rounded-3 border-top-0 rounded-top-0">
+
+            <div class="tab-pane fade show active p-0" id="tab-tuonglai">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="60" class="text-center">Mã</th>
+                                <th width="20%">Bệnh nhân / SĐT</th>
+                                <th width="20%">Bác sĩ / Ca khám</th>
+                                <th class="text-center" width="10%">Giờ khám</th>
+                                <th width="20%">Ghế / Dịch vụ</th>
+                                <th width="15%">Trạng thái</th>
+                                <th class="text-center" width="150">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!lichHienTaiTuongLai.Any())
+                            {
+                                <tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-box-open fs-1 mb-2 opacity-50 d-block"></i>Chưa có lịch hẹn nào.</td></tr>
+                            }
+                            @foreach (var group in lichHienTaiTuongLai.GroupBy(x => x.NgayHen.Date))
+                            {
+                                string titleDate = group.Key == DateTime.Today ? "HÔM NAY" :
+                                group.Key == DateTime.Today.AddDays(1) ? "NGÀY MAI" :
+                                group.Key.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN")).ToUpper();
+
+                                string bgRow = group.Key == DateTime.Today ? "table-primary text-primary" : "table-success text-success";
+
+                                <tr class="@bgRow fw-bold" style="border-top: 2px solid #dee2e6;">
+                                    <td colspan="7"><i class="fas fa-calendar-alt me-2"></i> @titleDate</td>
+                                </tr>
+
+                                foreach (var lh in group)
+                                {
+                                    var caKham = lh.GioHen.Hours < 12 ? "Sáng" : "Chiều";
+                                    var badgeClass = lh.TrangThai == "Đã khám" ? "bg-secondary" :
+                                    lh.TrangThai == "Hủy" ? "bg-danger" :
+                                    lh.TrangThai == "Đã xác nhận" ? "bg-success" : "bg-warning text-dark";
+
+                                    string rowOpacity = (lh.TrangThai == "Đã khám" || lh.TrangThai == "Hủy") ? "opacity: 0.6; background-color: #f8f9fa;" : "";
+
+                                    <tr onclick="editLichHen(@lh.MaLichHen)" style="cursor: pointer; @rowOpacity" title="Nhấn để xem chi tiết">
+                                        <td class="text-center text-muted fw-bold">@lh.MaLichHen</td>
+                                        <td>
+                                            <div class="fw-bold text-dark">@lh.BenhNhan?.HoTen</div>
+                                            <div class="small text-muted"><i class="fas fa-phone-alt me-1"></i>@lh.BenhNhan?.SoDienThoai</div>
+                                        </td>
+                                        <td>
+                                            @if (lh.BacSi != null)
+                                            {
+                                                <div class="fw-bold text-primary">BS. @lh.BacSi.NhanVien?.HoTen.Split(' ').Last()</div>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-danger fst-italic small">Chưa xếp</div>
+                                            }
+                                            <div class="small text-muted">Ca @caKham</div>
+                                        </td>
+                                        <td class="text-center fw-bold fs-6">@lh.GioHen.ToString("hh\\:mm")</td>
+                                        <td class="small">
+                                            <div class="fw-bold text-dark">@(lh.GheNhaKhoa?.TenGhe ?? "—")</div>
+                                            <div class="text-truncate text-muted" style="max-width:150px;" title="@lh.DichVu?.TenDichVu">@lh.DichVu?.TenDichVu</div>
+                                        </td>
+                                        <td><span class="badge @badgeClass">@lh.TrangThai</span></td>
+                                        <td class="text-center" onclick="event.stopPropagation()">
+                                            @if (lh.TrangThai == "Chờ xác nhận")
+                                            {
+                                                <button class="btn btn-sm btn-info text-white mb-1" onclick="duyetNhanhLich(@lh.MaLichHen, this)" title="Duyệt nhanh"><i class="fas fa-check"></i></button>
+                                            }
+                                            <button class="btn btn-sm btn-warning mb-1" onclick="editLichHen(@lh.MaLichHen)" title="Sửa"><i class="fas fa-edit"></i></button>
+                                            @if (lh.TrangThai != "Hủy" && lh.TrangThai != "Đã khám")
+                                            {
+                                                <button class="btn btn-sm btn-danger mb-1" onclick="huyLichNhanh(@lh.MaLichHen, this)" title="Hủy"><i class="fas fa-trash"></i></button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade p-0" id="tab-quakhu">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="60" class="text-center">Mã</th>
+                                <th width="20%">Bệnh nhân / SĐT</th>
+                                <th width="20%">Bác sĩ / Ca khám</th>
+                                <th class="text-center" width="10%">Giờ khám</th>
+                                <th width="20%">Ghế / Dịch vụ</th>
+                                <th width="15%">Trạng thái</th>
+                                <th class="text-center" width="150">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!lichQuaKhu.Any())
+                            {
+                                <tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-history fs-1 mb-2 opacity-50 d-block"></i>Không có dữ liệu quá khứ.</td></tr>
+                            }
+                            @foreach (var group in lichQuaKhu.GroupBy(x => x.NgayHen.Date))
+                            {
+                                string titleDate = group.Key == DateTime.Today.AddDays(-1) ? "HÔM QUA" :
+                                group.Key.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN")).ToUpper();
+
+                                <tr class="table-secondary text-secondary fw-bold" style="border-top: 2px solid #dee2e6;">
+                                    <td colspan="7"><i class="fas fa-history me-2"></i> @titleDate</td>
+                                </tr>
+
+                                foreach (var lh in group)
+                                {
+                                    var caKham = lh.GioHen.Hours < 12 ? "Sáng" : "Chiều";
+                                    var badgeClass = lh.TrangThai == "Đã khám" ? "bg-secondary" :
+                                    lh.TrangThai == "Hủy" ? "bg-danger" : "bg-warning text-dark";
+
+                                    <tr onclick="editLichHen(@lh.MaLichHen)" style="cursor: pointer; opacity: 0.8;">
+                                        <td class="text-center text-muted fw-bold">@lh.MaLichHen</td>
+                                        <td>
+                                            <div class="fw-bold text-dark">@lh.BenhNhan?.HoTen</div>
+                                            <div class="small text-muted"><i class="fas fa-phone-alt me-1"></i>@lh.BenhNhan?.SoDienThoai</div>
+                                        </td>
+                                        <td>
+                                            @if (lh.BacSi != null)
+                                            {
+                                                <div class="fw-bold text-muted">BS. @lh.BacSi.NhanVien?.HoTen.Split(' ').Last()</div>
+                                            }
+                                            <div class="small text-muted">Ca @caKham</div>
+                                        </td>
+                                        <td class="text-center fw-bold fs-6 text-muted">@lh.GioHen.ToString("hh\\:mm")</td>
+                                        <td class="small">
+                                            <div class="fw-bold text-muted">@(lh.GheNhaKhoa?.TenGhe ?? "—")</div>
+                                        </td>
+                                        <td><span class="badge @badgeClass">@lh.TrangThai</span></td>
+                                        <td class="text-center" onclick="event.stopPropagation()">
+                                            <button class="btn btn-sm btn-info text-white" onclick="editLichHen(@lh.MaLichHen)" title="Xem chi tiết"><i class="fas fa-eye"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    var searchLichTimeout;
+
+    // Tìm kiếm siêu mượt (Gõ đến đâu load đến đó, không văng chuột)
+    function debounceSearchLich() {
+        clearTimeout(searchLichTimeout);
+        searchLichTimeout = setTimeout(() => {
+            searchLichForm();
+        }, 400); // Chỉ load Ajax khi ngừng gõ phím 400ms
+    }
+
+    function searchLichForm(e) {
+        if (e && e.preventDefault) e.preventDefault();
+
+        // Lưu lại vị trí con trỏ chuột hiện tại
+        var searchInput = document.getElementById('searchName');
+        var cursorPosition = searchInput ? searchInput.selectionStart : 0;
+
+        var formData = $('#formFilterLich').serialize();
+
+        // Gọi lên hàm LoadDanhSachLich của trang cha (QuanLy.cshtml)
+        $.get('@Url.Action("DanhSachPartial", "LichHen", new { area = "Admin" })', formData, function (data) {
+            $('#danhSachContainer').html(data);
+
+            // Phục hồi lại Focus và con trỏ chuột đúng vị trí đang gõ
+            var newSearchInput = document.getElementById('searchName');
+            if (newSearchInput && newSearchInput.value !== '') {
+                newSearchInput.focus();
+                newSearchInput.setSelectionRange(cursorPosition, cursorPosition);
+            }
+        });
+    }
+
+    // Các hàm thao tác nhanh (Duyệt/Hủy)
+    function duyetNhanhLich(id, btn) {
+        event.stopPropagation();
+        if (!confirm('Xác nhận duyệt lịch hẹn này?')) return;
+        var origHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        $.post('@Url.Action("DuyetNhanh", "LichHen", new { area = "Admin" })',
+            { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val() },
+            function (res) {
+                if (res.success) {
+                    toastr.success(res.message);
+                    searchLichForm(); // Reload lại bằng hàm search để giữ focus
+                    if (typeof loadLichTuan === 'function') loadLichTuan();
+                } else {
+                    toastr.error(res.message);
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
+            }
+        );
+    }
+
+    function huyLichNhanh(id, btn) {
+        event.stopPropagation();
+        if (!confirm('Hủy lịch hẹn này? Hồ sơ bệnh nhân vẫn được giữ lại.')) return;
+        var origHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        $.post('@Url.Action("Delete", "LichHen", new { area = "Admin" })',
+            { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val() },
+            function (res) {
+                if (res.success) {
+                    toastr.success(res.message);
+                    searchLichForm(); // Reload lại bằng hàm search để giữ focus
+                    if (typeof loadLichTuan === 'function') loadLichTuan();
+                } else {
+                    toastr.error(res.message);
+                    btn.disabled = false;
+                    btn.innerHTML = origHtml;
+                }
+            }
+        );
+    }
+</script>

@@ -1,0 +1,77 @@
+﻿@model IEnumerable<quanlyphongkham.Models.GiaDichVu>
+@{
+    int maDichVu = ViewBag.MaDichVu;
+}
+
+<div class="mb-4">
+    <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Lịch sử thay đổi giá</h6>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Đơn giá</th>
+                    <th>Ngày áp dụng</th>
+                    <th>Ngày kết thúc</th>
+                    <th>Ghi chú</th>
+                    <th width="50"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="text-end fw-bold">@item.DonGia.ToString("N0") đ</td>
+                        <td>@item.NgayApDung.ToString("dd/MM/yyyy")</td>
+                        <td>@(item.NgayKetThuc?.ToString("dd/MM/yyyy") ?? "Đang áp dụng")</td>
+                        <td class="text-muted small">@item.GhiChu</td>
+                        <td>
+                            @if (item.NgayKetThuc != null)
+                            {
+                                <button class="btn btn-link text-danger p-0" onclick="deletePrice(@item.MaGiaDichVu)"><i class="fas fa-trash-alt"></i></button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bg-light p-3 rounded-3 border">
+    <h6 class="fw-bold mb-3">Cập nhật giá mới</h6>
+    <form id="quickPriceForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="maDichVu" value="@maDichVu" />
+        <div class="row g-2">
+            <div class="col-md-5">
+                <label class="small fw-bold">Đơn giá mới</label>
+                <input type="number" name="donGia" class="form-control" placeholder="0" required min="0" step="1000" />
+            </div>
+            <div class="col-md-4">
+                <label class="small fw-bold">Ngày áp dụng</label>
+                <input type="date" name="ngayApDung" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold">&nbsp;</label>
+                <button type="submit" class="btn btn-success w-100"><i class="fas fa-check me-1"></i>Áp dụng</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+</div>
+
+<script>
+    $('#quickPriceForm').submit(function (e) {
+        e.preventDefault();
+        $.post('@Url.Action("AddPrice", "DichVu")', $(this).serialize(), function (res) {
+            if (res.success) {
+                toastr.success("Đã cập nhật giá mới!");
+                openPriceManager(@maDichVu, ''); // Load lại chính nó
+                loadDichVuList(); // Cập nhật bảng ngoài
+            }
+        });
+    });
+</script>

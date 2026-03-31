@@ -1,0 +1,143 @@
+﻿@model quanlyphongkham.Models.TaiKhoanNguoiDung
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="py-4 text-center" style="background-color: #f0f7ff;">
+                    <h4 class="fw-bold text-dark mb-0">ĐĂNG KÝ THÀNH VIÊN</h4>
+                </div>
+                <div class="card-body p-4 p-lg-5">
+                    <form asp-action="Register" method="post" id="regForm">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-4">
+                            <div class="col-md-6 border-end">
+                                <h6 class="text-primary fw-bold mb-3 small text-uppercase">Tài khoản</h6>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Tên đăng nhập *</label>
+                                    <input asp-for="TenDangNhap" id="txtUsername" class="form-control rounded-pill bg-light border-0 px-3" required placeholder="Chữ và số, ít nhất 5 ký tự" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Mật khẩu <span class="text-danger">*</span></label>
+                                    <input asp-for="MatKhau" id="txtPassword" class="form-control rounded-pill bg-light border-0 px-3"
+                                           type="password" required minlength="8" placeholder="Tối thiểu 8 ký tự..." />
+
+                                    <div class="form-check mt-2 ms-2">
+                                        <input class="form-check-input" type="checkbox" id="checkShowReg">
+                                        <label class="form-check-label small text-muted" for="checkShowReg">Hiện mật khẩu</label>
+                                    </div>
+
+                                    <span asp-validation-for="MatKhau" class="text-danger small"></span>
+                                </div>
+
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary fw-bold mb-3 small text-uppercase">Thông tin cá nhân</h6>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Họ và tên *</label>
+                                    <input name="HoTen" class="form-control rounded-pill bg-light border-0 px-3" value="@Model?.HoTen" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
+                                    <input name="SoDienThoai" id="txtPhone" class="form-control rounded-pill bg-light border-0 px-3"
+                                           value="@Model?.SoDienThoai" required pattern="^0[0-9]{9}$" placeholder="09xxxxxxxx" />
+
+                                </div>
+                            </div>
+                        </div>
+                        <div id="formAlertBar" class="alert alert-danger d-none rounded-4 py-2 px-3 small fw-bold mb-3 shadow-sm border-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span id="alertContent"></span>
+                        </div>
+                        <button type="submit" id="btnSubmit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold mt-2 shadow-sm" style="background-color: #72a1ff; border:none;">
+                            HOÀN TẤT ĐĂNG KÝ
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const $form = $('#regForm');
+            const $btnSubmit = $('#btnSubmit');
+            const $alertBar = $('#formAlertBar');
+            const $alertText = $('#alertContent');
+
+            // Hàm hiển thị thanh thông báo
+            function showAlert(msg) {
+                $alertText.text(msg);
+                $alertBar.removeClass('d-none');
+                // Scroll tới vùng báo lỗi
+                $('html, body').animate({ scrollTop: $alertBar.offset().top - 150 }, 300);
+            }
+
+            // Hàm ẩn thanh thông báo
+            function hideAlert() {
+                $alertBar.addClass('d-none');
+            }
+
+            // Xử lý hiện/ẩn mật khẩu
+            $('#checkShowReg').on('change', function () {
+                const type = $(this).is(':checked') ? 'text' : 'password';
+                $('#txtPassword').attr('type', type);
+            });
+
+            // XỬ LÝ KHI BẤM ĐĂNG KÝ
+            $form.on('submit', async function (e) {
+                e.preventDefault(); // Ngăn form gửi đi ngay lập tức
+                hideAlert();
+
+                const username = $('#txtUsername').val().trim();
+                const phone = $('#txtPhone').val().trim();
+                const pwd = $('#txtPassword').val();
+
+                // 1. Kiểm tra định dạng cơ bản tại Client
+                if (username.length < 5 || !/^[a-zA-Z0-9]{5,}$/.test(username)) {
+                    showAlert("Tên đăng nhập không hợp lệ (tối thiểu 5 ký tự chữ và số).");
+                    return;
+                }
+
+                if (!/^0[0-9]{9}$/.test(phone)) {
+                    showAlert("Số điện thoại không đúng định dạng (10 chữ số).");
+                    return;
+                }
+
+                if (pwd.length < 8) {
+                    showAlert("Mật khẩu phải có ít nhất 8 ký tự.");
+                    return;
+                }
+
+                // 2. Kiểm tra trùng lặp trên Server qua AJAX
+                $btnSubmit.prop('disabled', true).text('ĐANG KIỂM TRA...');
+
+                try {
+                    // Kiểm tra Tên đăng nhập
+                    const userCheck = await $.get('/AccountWeb/CheckUsername', { username: username });
+                    if (!userCheck.valid) {
+                        showAlert("Tên đăng nhập đã có tài khoản, vui lòng dùng tên đăng nhập khác.");
+                        $btnSubmit.prop('disabled', false).text('HOÀN TẤT ĐĂNG KÝ');
+                        return;
+                    }
+
+                    // Kiểm tra Số điện thoại
+                    const phoneCheck = await $.get('/AccountWeb/CheckPhone', { phone: phone });
+                    if (!phoneCheck.valid) {
+                        showAlert("Số điện thoại đã có tài khoản, vui lòng dùng số điện thoại khác.");
+                        $btnSubmit.prop('disabled', false).text('HOÀN TẤT ĐĂNG KÝ');
+                        return;
+                    }
+
+                    // 3. Nếu mọi thứ OK, gửi form thật sự
+                    $btnSubmit.text('ĐANG ĐĂNG KÝ...');
+                    this.submit();
+
+                } catch (error) {
+                    showAlert("Có lỗi kết nối máy chủ. Vui lòng thử lại sau.");
+                    $btnSubmit.prop('disabled', false).text('HOÀN TẤT ĐĂNG KÝ');
+                }
+            });
+        });
+    </script>
+}

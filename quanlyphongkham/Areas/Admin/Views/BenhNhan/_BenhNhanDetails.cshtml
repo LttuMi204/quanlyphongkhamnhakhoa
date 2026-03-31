@@ -1,0 +1,68 @@
+﻿@model quanlyphongkham.Models.BenhNhan
+
+<div class="row">
+    <div class="col-md-6 border-end">
+        <h6 class="text-primary border-bottom pb-2 mb-3"><i class="fas fa-user me-2"></i>Thông tin cá nhân</h6>
+        <table class="table table-borderless table-sm">
+            <tr><th width="140">Mã bệnh nhân:</th><td>@Model.MaBenhNhan</td></tr>
+            <tr><th>Họ tên:</th><td class="text-primary fw-bold">@Model.HoTen</td></tr>
+            <tr><th>Giới tính:</th><td>@(Model.GioiTinh ?? "Chưa cập nhật")</td></tr>
+            <tr><th>Ngày sinh:</th><td>@(Model.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</td></tr>
+            <tr><th>Số điện thoại:</th><td>@Model.SoDienThoai</td></tr>
+            <tr><th>Email:</th><td>@(Model.Email ?? "Chưa cập nhật")</td></tr>
+            <tr><th>Địa chỉ:</th><td>@(Model.DiaChi ?? "Chưa cập nhật")</td></tr>
+            <tr><th>Ngày đăng ký:</th><td>@(Model.NgayDangKy?.ToString("dd/MM/yyyy") ?? "N/A")</td></tr>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h6 class="text-info border-bottom pb-2 mb-3"><i class="fas fa-user-shield me-2"></i>Tài khoản & Thông tin y tế</h6>
+        <table class="table table-borderless table-sm">
+            <tr>
+                <th width="140">Loại bệnh nhân:</th>
+                <td><span class="badge @(Model.MaTaiKhoan.HasValue ? "bg-success" : "bg-secondary")">@(Model.LoaiBenhNhan ?? "Khách mới")</span></td>
+            </tr>
+            <tr>
+                <th>Tài khoản:</th>
+                <td>
+                    @if (Model.TaiKhoanNguoiDung != null)
+                    {
+                        <span class="fw-bold text-success">@Model.TaiKhoanNguoiDung.TenDangNhap</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa liên kết tài khoản</span>
+                    }
+                </td>
+            </tr>
+        </table>
+
+        <h6 class="text-danger border-bottom pb-2 mb-3 mt-2"><i class="fas fa-notes-medical me-2"></i>Thông tin y tế</h6>
+        <table class="table table-borderless table-sm">
+            <tr>
+                <th width="140">Tiền sử bệnh:</th>
+                <td>@(string.IsNullOrEmpty(Model.TienSuBenh) ? "Không có dữ liệu" : Model.TienSuBenh)</td>
+            </tr>
+            <tr>
+                <th>Dị ứng:</th>
+                <td>@(string.IsNullOrEmpty(Model.DiUng) ? "Không ghi nhận" : Model.DiUng)</td>
+            </tr>
+            @if (!string.IsNullOrEmpty(Model.GhiChuBacSi))
+            {
+                <tr>
+                    <th>Ghi chú BS:</th>
+                    <td class="fst-italic text-info">@Model.GhiChuBacSi</td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+    <button type="button" class="btn btn-warning" onclick="openEditBN(@Model.MaBenhNhan)">
+        <i class="fas fa-edit me-1"></i>Sửa thông tin
+    </button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="fas fa-times me-1"></i>Đóng
+    </button>
+</div>

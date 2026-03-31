@@ -1,0 +1,85 @@
+﻿@model quanlyphongkham.Models.BacSi
+
+<form id="formMyProfile" onsubmit="submitMyProfile(event)">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="MaBacSi" value="@Model.MaBacSi" />
+
+    <div class="row g-4">
+        <div class="col-md-6 border-end pe-md-4">
+            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">Thông tin liên hệ</h6>
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Họ và tên</label>
+                <input type="text" value="@Model.NhanVien.HoTen" class="form-control rounded-pill bg-light" readonly />
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Số điện thoại</label>
+                <input type="text" name="SoDienThoai" value="@Model.NhanVien.SoDienThoai" class="form-control rounded-pill" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Email</label>
+                <input type="email" name="Email" value="@Model.NhanVien.Email" class="form-control rounded-pill" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Giới thiệu bản thân</label>
+                <textarea name="GioiThieu" class="form-control rounded-3" rows="4">@Model.NhanVien.GioiThieu</textarea>
+            </div>
+        </div>
+
+        <div class="col-md-6 ps-md-4">
+            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">Thông tin chuyên môn</h6>
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Chuyên khoa chính</label>
+                <input type="text" name="ChuyenKhoaChinh" value="@Model?.ChuyenKhoaChinh" class="form-control rounded-pill" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Năm kinh nghiệm</label>
+                <input type="number" name="SoNamKinhNghiem" value="@(Model?.SoNamKinhNghiem ?? 0)" class="form-control rounded-pill" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Số chứng chỉ hành nghề</label>
+                <input type="text" value="@Model.SoChungChi" class="form-control rounded-pill bg-light" readonly />
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Mô tả chi tiết kỹ năng</label>
+                <textarea name="MoTaChuyenMon" class="form-control rounded-3" rows="4">@Model.MoTaChuyenMon</textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-end mt-4 border-top pt-3">
+        <button type="button" class="btn btn-secondary rounded-pill px-4 me-2" data-bs-dismiss="modal">Hủy</button>
+        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+            <i class="fas fa-save me-2"></i>LƯU THÔNG TIN
+        </button>
+    </div>
+</form>
+
+<script>
+    function submitMyProfile(e) {
+        e.preventDefault();
+        var form = $('#formMyProfile');
+        var btn = form.find('button[type="submit"]');
+        var oldText = btn.html();
+
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...');
+
+        $.ajax({
+            url: '/bacsi/cap-nhat-ho-so',
+            type: 'POST',
+            data: form.serialize(),
+            success: function (res) {
+                if (res.success) {
+                    toastr.success(res.message);
+                    $('#mainModal').modal('hide'); // Tự động đóng form sau khi lưu xong
+                } else {
+                    toastr.error(res.message);
+                    btn.prop('disabled', false).html(oldText);
+                }
+            },
+            error: function () {
+                toastr.error('Lỗi kết nối đến máy chủ!');
+                btn.prop('disabled', false).html(oldText);
+            }
+        });
+    }
+</script>

@@ -1,0 +1,49 @@
+﻿@model quanlyphongkham.Models.YeuCauDatLich
+@{
+    ViewData["Title"] = "Đặt lịch khám";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg rounded-4 p-4">
+                <h2 class="text-center text-primary fw-bold mb-4">ĐẶT LỊCH KHÁM</h2>
+                <p class="text-center text-muted mb-4">Vui lòng nhập thông tin để chúng tôi liên hệ xác nhận lịch khám.</p>
+
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="HoTen" class="form-label fw-bold"></label>
+                        <input asp-for="HoTen" class="form-control rounded-pill" />
+                        <span asp-validation-for="HoTen" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SoDienThoai" class="form-label fw-bold"></label>
+                        <input asp-for="SoDienThoai" class="form-control rounded-pill" />
+                        <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DiaChi" class="form-label fw-bold"></label>
+                        <input asp-for="DiaChi" class="form-control rounded-pill" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input asp-for="CoZalo" class="form-check-input" />
+                        <label asp-for="CoZalo" class="form-check-label">Số điện thoại này có liên kết Zalo</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold">GỬI YÊU CẦU</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

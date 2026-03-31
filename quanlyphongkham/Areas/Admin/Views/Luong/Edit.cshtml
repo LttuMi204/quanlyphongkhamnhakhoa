@@ -1,0 +1,87 @@
+﻿@model quanlyphongkham.Areas.Admin.ViewModels.LuongViewModel
+
+@{
+    ViewData["Title"] = "Sửa lương nhân viên";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-edit me-2"></i>Sửa lương - @Model.HoTen
+        </h6>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit">
+            <input type="hidden" asp-for="MaLuong" />
+            <input type="hidden" asp-for="MaNhanVien" />
+            <input type="hidden" asp-for="HoTen" />
+            <input type="hidden" asp-for="ChucVu" />
+            <input type="hidden" asp-for="Thang" />
+            <input type="hidden" asp-for="Nam" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Nhân viên</label>
+                    <input class="form-control" value="@Model.HoTen - @Model.ChucVu" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Tháng/Năm</label>
+                    <input class="form-control" value="Tháng @Model.Thang năm @Model.Nam" readonly />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="LuongCoBan" class="form-label fw-bold">Lương cơ bản</label>
+                    <input asp-for="LuongCoBan" class="form-control" />
+                    <span asp-validation-for="LuongCoBan" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="PhanTramHoaHong" class="form-label fw-bold">% Hoa hồng</label>
+                    <input asp-for="PhanTramHoaHong" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SoTienHoaHong" class="form-label fw-bold">Tiền hoa hồng</label>
+                    <input asp-for="SoTienHoaHong" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Thuong" class="form-label fw-bold">Thưởng</label>
+                    <input asp-for="Thuong" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="KhauTru" class="form-label fw-bold">Khấu trừ</label>
+                    <input asp-for="KhauTru" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="TrangThai" class="form-label fw-bold">Trạng thái</label>
+                    <select asp-for="TrangThai" class="form-control">
+                        <option value="Chờ thanh toán">Chờ thanh toán</option>
+                        <option value="Đã thanh toán">Đã thanh toán</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Tổng lương (tự động tính)</label>
+                <input class="form-control" value="@Model.TongLuong.ToString("N0") đ" readonly />
+            </div>
+
+            <button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> Cập nhật</button>
+            <a asp-action="Index" asp-route-thang="@Model.Thang" asp-route-nam="@Model.Nam" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

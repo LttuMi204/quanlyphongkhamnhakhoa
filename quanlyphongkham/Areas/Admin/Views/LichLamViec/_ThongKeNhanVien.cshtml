@@ -1,0 +1,95 @@
+﻿@model quanlyphongkham.Models.NhanVien
+
+@{
+    var lichCuaToi = ViewBag.LichCuaToi as List<quanlyphongkham.Models.LichLamViec>;
+    int soCaKham = ViewBag.SoCaKhamThang ?? 0;
+}
+
+<div class="row g-0">
+    <div class="col-md-5 border-end pe-4">
+        <div class="text-center mb-3 mt-2">
+            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                <i class="fas @(Model.MaLoaiNV == 2 ? "fa-user-md" : "fa-user-tie")"></i>
+            </div>
+            <h5 class="fw-bold text-primary mb-1">@Model.HoTen</h5>
+            <span class="badge bg-info text-dark">@(Model.LoaiNhanVien?.TenLoaiNV ?? "Chưa cập nhật")</span>
+        </div>
+
+        <div class="bg-light rounded-3 p-3 mb-3">
+            <ul class="list-unstyled mb-0 small">
+                <li class="mb-2"><i class="fas fa-phone-alt text-muted me-2" style="width: 15px;"></i> <span class="fw-bold">@Model.SoDienThoai</span></li>
+                <li class="mb-2"><i class="fas fa-envelope text-muted me-2" style="width: 15px;"></i> @(Model.Email ?? "Không có")</li>
+                <li class="mb-2"><i class="fas fa-venus-mars text-muted me-2" style="width: 15px;"></i> @Model.GioiTinh</li>
+                <li><i class="fas fa-calendar-check text-muted me-2" style="width: 15px;"></i> Bắt đầu: @(Model.ThoiGianBatDauLam?.ToString("dd/MM/yyyy"))</li>
+            </ul>
+        </div>
+
+        @if (Model.MaLoaiNV == 2) // Nếu là Bác sĩ thì hiện thêm cục thống kê khám bệnh
+        {
+            <div class="alert alert-primary py-2 shadow-sm border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="fw-bold text-uppercase d-block" style="font-size:0.7rem;">Khám bệnh (Tháng này)</small>
+                    <span class="fs-4 fw-bold">@soCaKham</span> <small>ca khám</small>
+                </div>
+                <i class="fas fa-stethoscope fa-2x opacity-50"></i>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-7 ps-4">
+        <h6 class="text-primary fw-bold border-bottom pb-2 mb-3 mt-2"><i class="fas fa-calendar-week me-2"></i>Lịch phân công trong tuần</h6>
+
+        @if (lichCuaToi != null && lichCuaToi.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered text-center align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:30%;">Ngày</th>
+                            <th>Ca làm việc</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var l in lichCuaToi)
+                        {
+                            <tr>
+                                <td class="fw-bold text-dark">@(l.Thu == 8 ? "Chủ nhật" : $"Thứ {l.Thu}")</td>
+                                <td>
+                                    @if (l.CaLam == "Sáng")
+                                    {
+                                        <span class="badge bg-primary w-75 py-2"><i class="fas fa-sun me-1"></i> Ca Sáng</span>
+                                    }
+                                    else if (l.CaLam == "Chiều")
+                                    {
+                                        <span class="badge bg-success w-75 py-2"><i class="fas fa-moon me-1"></i> Ca Chiều</span>
+                                    }
+                                    else if (l.CaLam == "Cả ngày")
+                                    {
+                                        <span class="badge bg-warning text-dark w-75 py-2"><i class="fas fa-circle-notch me-1"></i> Cả Ngày</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary w-75 py-2">@l.CaLam</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 bg-light rounded-3 border border-dashed">
+                <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                <p class="text-muted fst-italic mb-0 small">Nhân sự này hiện chưa được phân ca làm việc nào trong tuần.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+        <i class="fas fa-times me-1"></i> Đóng
+    </button>
+</div>

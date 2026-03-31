@@ -1,0 +1,41 @@
+﻿@* @model IEnumerable<quanlyphongkham.Models.BacSiWebViewModel>
+@{
+    ViewData["Title"] = "Đội ngũ bác sĩ";
+}
+
+<section class="py-5 bg-light" style="border-radius:0 0 40px 40px;">
+    <div class="container text-center py-4">
+        <h6 class="text-primary fw-bold text-uppercase">Đội ngũ bác sĩ</h6>
+        <h2 class="fw-bold mb-3">Chuyên gia hàng đầu</h2>
+        <p class="text-muted col-lg-7 mx-auto">
+            Đội ngũ bác sĩ giàu kinh nghiệm, tận tâm với nghề, luôn mang lại nụ cười rạng rỡ cho bệnh nhân.
+        </p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            @foreach (var bs in Model)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <img src="https://img.freepik.com/free-photo/doctor-with-stethoscope_23-2148768356.jpg"
+                             class="card-img-top rounded-top-4" alt="@bs.HoTen">
+                        <div class="card-body text-center p-4">
+                            <h5 class="fw-bold">@bs.HoTen</h5>
+                            <p class="text-primary mb-1">@(bs.ChuyenKhoaChinh ?? bs.ChuyenKhoa ?? "Nha khoa tổng quát")</p>
+                            <p class="text-muted small">Kinh nghiệm: @(bs.SoNamKinhNghiem ?? 0) năm</p>
+                            <p class="text-muted small">@(bs.GioiThieu ?? "")</p>
+                            <p class="text-muted small">@(bs.GioiThieu ?? "")</p>
+                            <div class="d-flex justify-content-center gap-2 mt-2">
+                                <a asp-action="Details" asp-route-id="@bs.MaBacSi" class="btn btn-outline-primary rounded-pill btn-sm">Xem chi tiết</a>
+                                <a asp-controller="DatLichWeb" asp-action="Create" asp-route-bacSiId="@bs.MaBacSi" class="btn btn-primary rounded-pill btn-sm">Đặt lịch ngay</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section> *@

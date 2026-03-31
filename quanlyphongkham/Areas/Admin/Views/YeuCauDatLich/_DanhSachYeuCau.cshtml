@@ -1,0 +1,88 @@
+﻿@model quanlyphongkham.Models.YeuCauDatLich
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden animate__animated animate__fadeIn">
+    <div class="card-header bg-primary text-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="fas fa-paper-plane me-2"></i>Yêu cầu đặt lịch (Khách vãng lai)</h6>
+    </div>
+    <div class="card-body p-4">
+        <div class="mb-4">
+            <label class="small text-muted d-block mb-1 text-uppercase fw-bold">Người đăng ký</label>
+            <div class="d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+                    <i class="fas fa-user fa-lg"></i>
+                </div>
+                <div>
+                    <h5 class="text-primary fw-bold mb-0">@Model.HoTen</h5>
+                    <p class="text-muted mb-0 small"><i class="fas fa-phone me-1"></i> @Model.SoDienThoai</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-4 border h-100">
+                    <label class="form-label small text-muted fw-bold">Thời gian gửi</label>
+                    <div class="fw-bold text-dark">
+                        <i class="fas fa-clock text-primary me-2"></i>@Model.NgayTao.ToString("HH:mm - dd/MM/yyyy")
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded-4 border h-100">
+                    <label class="form-label small text-muted fw-bold">Địa chỉ / Zalo</label>
+                    <div class="fw-bold text-dark text-truncate">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>@(string.IsNullOrEmpty(Model.DiaChi) ? "Không có" : Model.DiaChi)
+                    </div>
+                    <div class="small mt-1">
+                        Có dùng Zalo: @(Model.CoZalo ? "✔️ Có" : "❌ Không")
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.TrangThai == "Chờ xử lý")
+        {
+            <div class="row g-2 mt-4 border-top pt-4">
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-outline-danger w-100 py-3 rounded-pill fw-bold" onclick="tuChoiYeuCau(@Model.Id)">
+                        <i class="fas fa-times-circle me-2"></i> TỪ CHỐI
+                    </button>
+                </div>
+                <div class="col-md-8">
+                    <button type="button" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm" onclick="duyetYeuCau(@Model.Id)">
+                        <i class="fas fa-calendar-check me-2"></i> DUYỆT & XẾP LỊCH KHÁM
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center mt-4 border-top pt-4">
+                <span class="badge bg-secondary p-2 fs-6">Đã được xử lý (@Model.TrangThai)</span>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function tuChoiYeuCau(id) {
+        if (confirm('Bạn có chắc chắn muốn TỪ CHỐI và HỦY yêu cầu này?')) {
+            $.ajax({
+                url: '@Url.Action("Huy", "YeuCauDatLich")', // Đảm bảo có hàm Huy(id) trong Controller
+                type: 'POST',
+                data: { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() },
+                success: function (res) {
+                    if (res.success) {
+                        toastr.success(res.message);
+                        location.reload();
+                    } else toastr.error(res.message);
+                }
+            });
+        }
+    }
+
+    function duyetYeuCau(id) {
+        // Redirect qua trang Lịch hẹn và khởi động luồng
+        window.location.href = '@Url.Action("Duyet", "YeuCauDatLich")/' + id;
+    }
+</script>

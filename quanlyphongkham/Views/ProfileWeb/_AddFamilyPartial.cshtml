@@ -1,0 +1,80 @@
+﻿@model quanlyphongkham.Models.BenhNhan
+
+<div class="card border-primary shadow-sm rounded-4 mb-4 animate__animated animate__fadeIn">
+    <div class="card-header bg-primary bg-opacity-10 border-0 py-3">
+        <h6 class="m-0 fw-bold text-primary"><i class="fa-solid fa-user-plus me-2"></i>Thêm hồ sơ người thân mới</h6>
+    </div>
+    <div class="card-body p-4">
+        <form id="formNewFamilyMember" asp-action="AddFamilyMember" asp-controller="ProfileWeb" method="post">
+            @Html.AntiForgeryToken()
+            <div class="row">
+                <div class="col-md-6 border-end pe-4">
+                    <h6 class="text-muted fw-bold mb-3 border-bottom pb-2">Thông tin cá nhân</h6>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                        <input type="text" asp-for="HoTen" class="form-control rounded-pill" placeholder="Nhập họ tên..." required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Quan hệ <span class="text-danger">*</span></label>
+                            <select name="QuanHe" class="form-select rounded-pill" required>
+                                <option value="Con">Con</option>
+                                <option value="Vợ">Vợ</option>
+                                <option value="Chồng">Chồng</option>
+                                <option value="Cha">Cha</option>
+                                <option value="Mẹ">Mẹ</option>
+                                <option value="Anh">Anh</option>
+                                <option value="Chị">Chị</option>
+                                <option value="Em">Em</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Ngày sinh</label>
+                            <input type="date" asp-for="NgaySinh" class="form-control rounded-pill">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Giới tính</label>
+                            <select asp-for="GioiTinh" class="form-select rounded-pill">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Số điện thoại</label>
+                            <input type="text" asp-for="SoDienThoai" class="form-control rounded-pill" placeholder="09xxxxxxxx">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Địa chỉ</label>
+                        <textarea asp-for="DiaChi" class="form-control rounded-4" rows="2" placeholder="Địa chỉ hiện tại..."></textarea>
+                    </div>
+                </div>
+
+                <div class="col-md-6 ps-4">
+                    <h6 class="text-danger fw-bold mb-3 border-bottom pb-2">Thông tin y tế</h6>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-danger">Tiền sử bệnh lý</label>
+                        <textarea asp-for="TienSuBenh" class="form-control rounded-4" rows="3" placeholder="Ghi chú bệnh lý nếu có..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-danger">Dị ứng</label>
+                        <textarea asp-for="DiUng" class="form-control rounded-4" rows="3" placeholder="Ghi chú dị ứng nếu có..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-info">Ghi chú thêm</label>
+                        <textarea name="GhiChu" class="form-control rounded-4" rows="2" placeholder="Ví dụ: Cần khám sâu răng..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end gap-2 border-top pt-3">
+                <button type="button" class="btn btn-light rounded-pill px-4 border" onclick="cancelAddFamily()">Hủy bỏ</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnSubmitAddFamily">LƯU HỒ SƠ NGƯỜI THÂN</button>
+            </div>
+        </form>
+    </div>
+</div>

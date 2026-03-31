@@ -1,0 +1,210 @@
+﻿@model quanlyphongkham.Models.LichHen
+
+@{
+    // Map class CSS cho badge trạng thái
+    string trangThaiClass = Model.TrangThai switch
+    {
+        "Đã xác nhận" => "badge-confirmed",
+        "Chờ xác nhận" => "badge-pending",
+        "Đã khám" => "badge-done",
+        "Hủy" => "badge-cancel",
+        _ => "badge-pending"
+    };
+}
+
+<style>
+    .ct-wrapper {
+        font-family: 'Segoe UI', sans-serif;
+        background: #fff;
+        padding: 0;
+    }
+
+    /* Header Banner đồng bộ màu #72a1ff */
+    .ct-header-banner {
+        background: linear-gradient(135deg, #72a1ff 0%, #4a90e2 100%);
+        padding: 24px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ct-ma-lich {
+        font-size: 12px;
+        opacity: 0.8;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .ct-ten-benh-nhan {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    /* Badge trạng thái */
+    .ct-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-confirmed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge-cancel {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .ct-body {
+        padding: 20px;
+    }
+
+    /* Section Card */
+    .ct-section {
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 15px;
+        padding: 16px;
+    }
+
+    .ct-info-label {
+        font-size: 11px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .ct-info-value {
+        font-size: 14px;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .text-highlight {
+        color: #72a1ff;
+    }
+
+    /* Footer chỉ 2 nút */
+    .ct-footer {
+        padding: 16px 20px;
+        display: flex;
+        gap: 10px;
+        border-top: 1px solid #eee;
+        background: white;
+    }
+
+    .ct-btn-full {
+        flex: 1;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 13px;
+        border: none;
+        transition: 0.2s;
+        cursor: pointer;
+    }
+
+    .btn-duyet {
+        background: #72a1ff;
+        color: white;
+    }
+
+    .btn-huy {
+        background: #f1f5f9;
+        color: #ef4444;
+        border: 1px solid #fee2e2;
+    }
+
+    .ct-btn-full:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="ct-wrapper animate__animated animate__fadeIn">
+    <div class="ct-header-banner">
+        <div class="ct-ma-lich">Yêu cầu đặt lịch #@Model.MaLichHen</div>
+        <div class="ct-ten-benh-nhan">@Model.BenhNhan.HoTen.ToUpper()</div>
+        <div class="ct-badge @trangThaiClass">
+            <i class="fas fa-circle" style="font-size: 8px;"></i> @Model.TrangThai
+        </div>
+    </div>
+
+    <div class="ct-body">
+        <div class="ct-section">
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="ct-info-label">Số điện thoại</div>
+                    <div class="ct-info-value">@Model.BenhNhan.SoDienThoai</div>
+                </div>
+                <div class="col-6">
+                    <div class="ct-info-label">Dịch vụ đăng ký</div>
+                    <div class="ct-info-value text-highlight">@(Model.DichVu?.TenDichVu ?? "Khám tổng quát")</div>
+                </div>
+                <div class="col-12 mt-3">
+                    <div class="ct-info-label">Thời gian hẹn khám</div>
+                    <div class="ct-info-value text-danger" style="font-size: 16px;">
+                        <i class="far fa-calendar-alt me-1"></i> @Model.NgayHen.ToString("dd/MM/yyyy") - @Model.GioHen.ToString(@"hh\:mm")
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ct-section" style="background: #fffbeb; border-color: #fef3c7;">
+            <div class="ct-info-label" style="color: #d97706;">Ghi chú từ khách hàng</div>
+            <div class="small mt-1 italic">
+                " @(string.IsNullOrEmpty(Model.GhiChu) ? "Không có ghi chú" : Model.GhiChu) "
+            </div>
+        </div>
+    </div>
+
+    <div class="ct-footer">
+        @if (Model.TrangThai == "Chờ xác nhận")
+        {
+            <button class="ct-btn-full btn-huy" onclick="xuLyLichMember(@Model.MaLichHen, 'Huy')">
+                <i class="fas fa-times-circle me-1"></i> TỪ CHỐI
+            </button>
+            <button class="ct-btn-full btn-duyet" onclick="xuLyLichMember(@Model.MaLichHen, 'Duyet')">
+                <i class="fas fa-check-circle me-1"></i> DUYỆT LỊCH
+            </button>
+        }
+        else
+        {
+            <div class="alert alert-secondary w-100 text-center py-2 mb-0 rounded-3 fw-bold small">
+                <i class="fas fa-lock me-2"></i> LỊCH HẸN ĐÃ ĐƯỢC CHỐT (@Model.TrangThai.ToUpper())
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function xuLyLichMember(id, action) {
+        let msg = action === 'Duyet' ? "Xác nhận DUYỆT lịch hẹn này?" : "Xác nhận HỦY lịch hẹn này?";
+        if (!confirm(msg)) return;
+
+        // Gọi action xử lý nhanh tại Controller
+        $.post('/Admin/LichHen/XuLyNhanhMember', { id: id, tacVu: action }, function (res) {
+            if (res.success) {
+                toastr.success(res.message);
+                // Load lại trang để cập nhật danh sách và giao diện chốt
+                location.reload();
+            } else {
+                toastr.error(res.message);
+            }
+        });
+    }
+</script>

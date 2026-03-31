@@ -1,0 +1,206 @@
+﻿@{
+    ViewData["Title"] = "Bảng giá";
+}
+
+<style>
+    /* Hiệu ứng hover nhẹ cho các dòng giá tiền */
+    .price-list-item {
+        transition: background-color 0.2s ease;
+        border-bottom: 1px dashed #e9ecef;
+    }
+
+        .price-list-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .price-list-item:last-child {
+            border-bottom: none;
+        }
+
+    /* Hiệu ứng cho card bảng giá */
+    .price-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .price-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+        }
+</style>
+
+<section class="py-5 position-relative" style="background: linear-gradient(135deg, #f8f9fa 0%, #e0f7fa 100%); border-radius: 0 0 50px 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+    <div class="container text-center py-5">
+        <span class="badge bg-primary px-3 py-2 rounded-pill text-uppercase mb-3 shadow-sm">Bảng giá dịch vụ</span>
+        <h1 class="fw-bold text-dark mb-3">Chi phí điều trị minh bạch</h1>
+        <p class="text-muted lead mx-auto" style="max-width: 700px;">
+            Chúng tôi cam kết công khai rõ ràng chi phí các dịch vụ nha khoa.
+            Lưu ý: Chi phí thực tế có thể thay đổi tùy thuộc vào tình trạng răng miệng cụ thể.
+        </p>
+    </div>
+</section>
+
+<section class="py-5 mt-3">
+    <div class="container">
+        <div class="row g-4 align-items-stretch">
+
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 price-card h-100 overflow-hidden">
+                    <div class="card-header border-0 text-center py-4" style="background-color: #e3f2fd;">
+                        <div class="bg-white text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-stethoscope fs-3"></i>
+                        </div>
+                        <h4 class="fw-bold text-primary mb-0">Nha khoa tổng quát</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <ul class="list-unstyled mb-0">
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Cạo vôi răng</span>
+                                <strong class="text-dark fs-6">200.000đ</strong>
+                            </li>
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Trám răng</span>
+                                <strong class="text-dark fs-6">300.000đ</strong>
+                            </li>
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Nhổ răng thường</span>
+                                <strong class="text-dark fs-6">500.000đ</strong>
+                            </li>
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Nhổ răng khôn</span>
+                                <strong class="text-dark fs-6">1.500.000đ</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 price-card h-100 overflow-hidden position-relative">
+                    <div class="position-absolute top-0 end-0 bg-warning text-dark px-3 py-1 fw-bold" style="border-bottom-left-radius: 15px; font-size: 0.8rem; z-index: 1;">
+                        Phổ biến
+                    </div>
+                    <div class="card-header border-0 text-center py-4" style="background-color: #e0f2f1;">
+                        <div class="bg-white text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-face-smile-beam fs-3"></i>
+                        </div>
+                        <h4 class="fw-bold text-info mb-0" style="color: #00897b !important;">Nha khoa thẩm mỹ</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <ul class="list-unstyled mb-0">
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Tẩy trắng răng</span>
+                                <strong class="text-dark fs-6">2.000.000đ</strong>
+                            </li>
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Bọc răng sứ</span>
+                                <strong class="text-dark fs-6">3.500.000đ</strong>
+                            </li>
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Dán sứ Veneer</span>
+                                <strong class="text-dark fs-6">5.000.000đ</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 price-card h-100 overflow-hidden">
+                    <div class="card-header border-0 text-center py-4" style="background-color: #e8f5e9;">
+                        <div class="bg-white text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 60px; height: 60px;">
+                            <i class="fa-solid fa-tooth fs-3"></i>
+                        </div>
+                        <h4 class="fw-bold text-success mb-0">Cấy ghép Implant</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <ul class="list-unstyled mb-0">
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Implant Hàn Quốc</span>
+                                <strong class="text-dark fs-6">15.000.000đ</strong>
+                            </li>
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Implant Mỹ</span>
+                                <strong class="text-dark fs-6">20.000.000đ</strong>
+                            </li>
+                            <li class="price-list-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-secondary fw-medium">Implant Thụy Sĩ</span>
+                                <strong class="text-dark fs-6">30.000.000đ</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<div class="container mb-5">
+    <section class="py-5 position-relative overflow-hidden rounded-4 shadow-sm" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+        <div class="container position-relative z-1 text-center text-white">
+            <h2 class="fw-bold mb-3">Sẵn sàng chăm sóc nụ cười của bạn?</h2>
+            <p class="lead mb-4 mx-auto" style="max-width: 600px; opacity: 0.9;">
+                Nhận tư vấn miễn phí từ đội ngũ bác sĩ chuyên khoa và lựa chọn phương pháp điều trị phù hợp nhất.
+            </p>
+
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                @if (Context.Session.GetInt32("UserId") != null)
+                {
+                    <button type="button" class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm" onclick="openDatLichModal()">
+                        <i class="fa-regular fa-calendar-check me-2 text-primary"></i> Đặt lịch ngay
+                    </button>
+                }
+                else
+                {
+                    <a asp-controller="PublicDatLich" asp-action="Create" class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm">
+                        <i class="fa-regular fa-calendar-check me-2 text-primary"></i> Đặt lịch ngay
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="modal fade" id="modalThanhVien" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4" id="modalContentDatLich">
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function openDatLichModal() {
+            $.get('/ProfileWeb/GetDatLichForm', function (data) {
+                $('#modalContentDatLich').html(data);
+                $('#modalThanhVien').modal('show');
+            }).fail(function () {
+                // Nếu chưa đăng nhập thì mới chuyển hướng sang trang Login
+                window.location.href = "/AccountWeb/Login";
+            });
+        }
+
+        $(document).on('submit', '#formNewLichHen', function (e) {
+            e.preventDefault();
+            var form = $(this);
+
+            $.post(form.attr('action'), form.serialize(), function (res) {
+                if (res.success) {
+                    // 1. Hiện thông báo
+                    alert(res.message);
+
+                    // 2. Đóng Modal
+                    $('#modalThanhVien').modal('hide');
+
+                    // 3. GIỮ Ở LẠI TRANG:
+                    // Cách 1: Load lại đúng trang hiện tại để làm sạch form
+                    location.reload();
+
+                    // Cách 2: Nếu Mi không muốn load lại trang luôn (chỉ đóng modal):
+                    // Hãy xóa dòng location.reload() ở trên đi nhé.
+                } else {
+                    alert(res.message);
+                }
+            });
+        });
+    </script>
+}

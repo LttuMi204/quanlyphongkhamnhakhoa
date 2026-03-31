@@ -1,0 +1,247 @@
+﻿@model List<quanlyphongkham.Areas.Admin.ViewModels.LichTuanViewModel>
+@using System.Globalization
+
+@{
+    var startOfWeek = ViewBag.StartOfWeek as DateTime? ?? DateTime.Today;
+    var endOfWeek = ViewBag.EndOfWeek as DateTime? ?? startOfWeek.AddDays(6);
+    var prevWeek = ViewBag.PrevWeek as DateTime? ?? startOfWeek.AddDays(-7);
+    var nextWeek = ViewBag.NextWeek as DateTime? ?? startOfWeek.AddDays(7);
+}
+<div class="row g-2 mb-3">
+    @{
+        var statsTuan = new[] {
+    new { Label = "Tổng", Value = (int)(ViewBag.TongSoLich ?? 0), Color = "#6366f1" },
+    new { Label = "Đã Khám", Value = (int)(ViewBag.DaKham ?? 0), Color = "#10b981" },
+    new { Label = "Đã Xác Nhận", Value = (int)(ViewBag.DaXacNhan ?? 0), Color = "#0ea5e9" },
+    new { Label = "Chờ Duyệt", Value = (int)(ViewBag.ChoXacNhan ?? 0), Color = "#f59e0b" },
+    new { Label = "Đã Hủy", Value = (int)(ViewBag.DaHuy ?? 0), Color = "#ef4444" }
+    };
+    }
+    @foreach (var s in statsTuan)
+    {
+        <div class="col">
+            <div class="mini-stat-card border" style="border-left: 3px solid @s.Color !important; background: #fff; border-radius: 8px; padding: 8px 12px;">
+                <div class="mini-stat-num" style="color: @s.Color; font-size: 1.25rem; font-weight: 800;">@s.Value</div>
+                <div class="mini-stat-label" style="font-size: 0.65rem; color: #64748b; font-weight: 700; text-transform: uppercase;">@s.Label</div>
+            </div>
+        </div>
+    }
+</div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="m-0 fw-bold text-primary">
+        <i class="fas fa-calendar-alt me-2"></i>Tuần: @startOfWeek.ToString("dd/MM") - @endOfWeek.ToString("dd/MM/yyyy")
+    </h5>
+    <div class="btn-group shadow-sm">
+        <button class="btn btn-outline-primary fw-bold" onclick="reloadLichTuan('@prevWeek.ToString("yyyy-MM-dd")')">
+            <i class="fas fa-chevron-left me-1"></i> Trước
+        </button>
+        <button class="btn btn-primary fw-bold px-4" onclick="reloadLichTuan('@DateTime.Today.ToString("yyyy-MM-dd")')">
+            Hôm Nay
+        </button>
+        <button class="btn btn-outline-primary fw-bold" onclick="reloadLichTuan('@nextWeek.ToString("yyyy-MM-dd")')">
+            Sau <i class="fas fa-chevron-right ms-1"></i>
+        </button>
+    </div>
+</div>
+
+<div class="table-responsive rounded-3 border shadow-sm bg-white">
+    <table class="table table-bordered mb-0" style="table-layout: fixed; min-width: 950px;">
+        <thead class="table-light">
+            <tr class="text-center align-middle">
+                <th style="width: 10%;" class="fw-bold text-secondary text-uppercase border-bottom-0">Ca Khám</th>
+                @foreach (var item in Model)
+                {
+                    <th style="width: 12.8%;" class="@(item.Ngay.Date == DateTime.Today ? "bg-primary text-white border-primary" : "bg-white")">
+                        <div class="small text-uppercase fw-bold @(item.Ngay.Date == DateTime.Today ? "text-light" : "opacity-75")">@item.Ngay.ToString("dddd", new CultureInfo("vi-VN"))</div>
+                        <div class="fs-5 fw-bold">@item.Ngay.ToString("dd/MM")</div>
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center align-middle bg-white z-1" style="min-height: 240px;">
+                    <div class="fw-bold text-dark fs-6 text-uppercase">Ca sáng</div>
+                    <div class="small text-muted fw-bold mt-1">(7:30 – 12:00)</div>
+                </td>
+                @foreach (var item in Model)
+                {
+                    <td class="p-2" style="height: 240px; background-color: #f8fafc; position: relative; vertical-align: top;">
+                        @if (item.Sang != null && item.Sang.Any())
+                        {
+                            <div style="height: 220px; overflow-y: auto; padding-right: 4px;" class="custom-scrollbar">
+                                @foreach (var lh in item.Sang)
+                                {
+                                    bool isKham = lh.TrangThai == "Đã khám";
+                                    bool isHuy = lh.TrangThai == "Hủy";
+
+                                    string bgCardClass = isKham ? "bg-light" : isHuy ? "bg-light opacity-50" : "bg-white shadow-sm";
+                                    string textClass = isKham || isHuy ? "text-muted" : "text-dark";
+
+                                    <div class="card mb-2 p-2 border-0 rounded-3 appointment-card @bgCardClass"
+                                         onclick="editLichHen(@lh.MaLichHen)" title="Nhấn để xem chi tiết / Cập nhật">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <div class="fw-bold small @textClass text-truncate" style="max-width: 75%;">
+                                                @lh.BenhNhan?.HoTen
+                                            </div>
+                                            <div class="small fw-bold @textClass" style="font-size: 0.75rem;">
+                                                @lh.GioHen.ToString("hh\\:mm")
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                            @if (lh.BacSi != null)
+                                            {
+                                                <div class="small text-truncate @(isKham || isHuy ? "text-muted" : "text-primary fw-bold")" style="max-width: 55%; font-size: 0.75rem;">
+                                                    BS. @lh.BacSi.NhanVien?.HoTen.Split(' ').Last()
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="small text-danger fst-italic text-truncate" style="max-width: 55%; font-size: 0.75rem;">
+                                                    Chưa xếp BS
+                                                </div>
+                                            }
+
+                                            @if (isKham)
+                                            {
+                                                <span class="badge bg-secondary rounded-1" style="font-size: 0.65rem;">Đã khám</span>
+                                            }
+                                            else if (isHuy)
+                                            {
+                                                <span class="badge bg-danger rounded-1" style="font-size: 0.65rem;">Đã hủy</span>
+                                            }
+                                            else if (lh.TrangThai == "Chờ xác nhận")
+                                            {
+                                                <span class="badge bg-warning text-dark rounded-1" style="font-size: 0.65rem;">Chờ duyệt</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex h-100 align-items-center justify-content-center opacity-25">
+                                <i class="fas fa-calendar-plus fs-4 text-muted"></i>
+                            </div>
+                        }
+                    </td>
+                }
+            </tr>
+
+            <tr>
+                <td class="text-center align-middle bg-white z-1" style="min-height: 240px;">
+                    <div class="fw-bold text-dark fs-6 text-uppercase">Ca chiều</div>
+                    <div class="small text-muted fw-bold mt-1">(14:00 – 19:30)</div>
+                </td>
+                @foreach (var item in Model)
+                {
+                    <td class="p-2" style="height: 240px; background-color: #f8fafc; position: relative; vertical-align: top;">
+                        @if (item.Chieu != null && item.Chieu.Any())
+                        {
+                            <div style="height: 220px; overflow-y: auto; padding-right: 4px;" class="custom-scrollbar">
+                                @foreach (var lh in item.Chieu)
+                                {
+                                    bool isKham = lh.TrangThai == "Đã khám";
+                                    bool isHuy = lh.TrangThai == "Hủy";
+
+                                    string bgCardClass = isKham ? "bg-light" : isHuy ? "bg-light opacity-50" : "bg-white shadow-sm";
+                                    string textClass = isKham || isHuy ? "text-muted" : "text-dark";
+
+                                    <div class="card mb-2 p-2 border-0 rounded-3 appointment-card @bgCardClass"
+                                         onclick="editLichHen(@lh.MaLichHen)" title="Nhấn để xem chi tiết / Cập nhật">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <div class="fw-bold small @textClass text-truncate" style="max-width: 75%;">
+                                                @lh.BenhNhan?.HoTen
+                                            </div>
+                                            <div class="small fw-bold @textClass" style="font-size: 0.75rem;">
+                                                @lh.GioHen.ToString("hh\\:mm")
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                            @if (lh.BacSi != null)
+                                            {
+                                                <div class="small text-truncate @(isKham || isHuy ? "text-muted" : "text-primary fw-bold")" style="max-width: 55%; font-size: 0.75rem;">
+                                                    BS. @lh.BacSi.NhanVien?.HoTen.Split(' ').Last()
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="small text-danger fst-italic text-truncate" style="max-width: 55%; font-size: 0.75rem;">
+                                                    Chưa xếp BS
+                                                </div>
+                                            }
+
+                                            @if (isKham)
+                                            {
+                                                <span class="badge bg-secondary rounded-1" style="font-size: 0.65rem;">Đã khám</span>
+                                            }
+                                            else if (isHuy)
+                                            {
+                                                <span class="badge bg-danger rounded-1" style="font-size: 0.65rem;">Đã hủy</span>
+                                            }
+                                            else if (lh.TrangThai == "Chờ xác nhận")
+                                            {
+                                                <span class="badge bg-warning text-dark rounded-1" style="font-size: 0.65rem;">Chờ duyệt</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex h-100 align-items-center justify-content-center opacity-25">
+                                <i class="fas fa-calendar-plus fs-4 text-muted"></i>
+                            </div>
+                        }
+                    </td>
+                }
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<style>
+    /* Thanh cuộn cho ô nhiều lịch */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+    /* Hiệu ứng thẻ phẳng */
+    .appointment-card {
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .appointment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+            background-color: #f8faff !important;
+        }
+</style>
+
+<script>
+    // Hàm này sẽ ưu tiên bắt sự kiện click thay cho hàm bị kẹt trong QuanLy.cshtml
+    function reloadLichTuan(ngay) {
+        $('#lichTuanContainer').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+        $.get('@Url.Action("LichTuanPartial", "LichHen", new { area = "Admin" })', { ngay: ngay }, function (html) {
+            $('#lichTuanContainer').html(html);
+        }).fail(function () {
+            toastr.error('Lỗi tải dữ liệu lịch tuần');
+        });
+    }
+</script>

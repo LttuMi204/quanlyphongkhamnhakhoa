@@ -1,0 +1,52 @@
+﻿@model IEnumerable<quanlyphongkham.Models.Luong>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-money-bill-wave me-2"></i>Bảng 
+            nhân viên
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Tháng/Năm</th>
+                        <th>Lương cơ bản</th>
+                        <th>Hoa hồng</th>
+                        <th>Thưởng</th>
+                        <th>Khấu trừ</th>
+                        <th>Tổng lương</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.NhanVien?.HoTen</td>
+                            <td>@item.Thang/@item.Nam</td>
+                            <td>@item.LuongCoBan?.ToString("N0")</td>
+                            <td>@item.SoTienHoaHong?.ToString("N0")</td>
+                            <td>@item.Thuong?.ToString("N0")</td>
+                            <td>@item.KhauTru?.ToString("N0")</td>
+                            <td><strong>@item.TongLuong?.ToString("N0")</strong></td>
+                            <td><span class="badge @(item.TrangThai == "Đã thanh toán" ? "bg-success" : "bg-warning")">@item.TrangThai</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" onclick="openEditLuongModal(@item.MaLuong)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteLuong(@item.MaLuong)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

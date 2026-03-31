@@ -1,0 +1,44 @@
+﻿@model quanlyphongkham.Models.BenhNhan
+<div class="animate__animated animate__fadeIn">
+    <button class="btn btn-sm btn-outline-secondary rounded-pill mb-3" onclick="loadFamilyList()">
+        <i class="fa-solid fa-arrow-left me-1"></i> Quay lại danh sách
+    </button>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-6 border-end">
+                    <h6 class="text-primary border-bottom pb-2 mb-3"><i class="fas fa-user me-2"></i>Thông tin cá nhân</h6>
+                    <table class="table table-borderless table-sm">
+                        <tr><th width="140">Mã hồ sơ:</th><td>#@Model.MaBenhNhan</td></tr>
+                        <tr><th>Họ tên:</th><td class="text-primary fw-bold">@Model.HoTen</td></tr>
+                        <tr><th>Giới tính:</th><td>@Model.GioiTinh</td></tr>
+                        <tr><th>Số điện thoại:</th><td>@(string.IsNullOrEmpty(Model.SoDienThoai) ? "Chưa có" : Model.SoDienThoai)</td></tr>
+                        <tr><th>Ngày sinh:</th><td>@(Model.NgaySinh?.ToString("dd/MM/yyyy") ?? "N/A")</td></tr>
+                        <tr><th>Địa chỉ:</th><td>@(Model.DiaChi ?? "Chưa cập nhật")</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6 ps-md-4">
+                    <h6 class="text-danger border-bottom pb-2 mb-3"><i class="fas fa-notes-medical me-2"></i>Thông tin y tế</h6>
+                    <div class="mb-2"><strong>Tiền sử bệnh:</strong> <p class="text-muted small">@(Model.TienSuBenh ?? "Không có dữ liệu")</p></div>
+                    <div class="mb-2"><strong>Dị ứng:</strong> <p class="text-muted small">@(Model.DiUng ?? "Không có")</p></div>
+                    @if (!string.IsNullOrEmpty(Model.GhiChuBacSi))
+                    {
+                        <div class="p-2 bg-light rounded small text-info italic">@Model.GhiChuBacSi</div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-light border-0 p-3 d-flex gap-2 justify-content-center">
+            <button class="btn btn-success rounded-pill px-4 fw-bold" onclick="bookForMember(@Model.MaBenhNhan)">
+                <i class="fa-solid fa-calendar-check me-1"></i> ĐẶT LỊCH KHÁM
+            </button>
+            <button class="btn btn-outline-warning rounded-pill px-3" onclick="editMember(@Model.MaBenhNhan)">
+                <i class="fa-solid fa-user-pen me-1"></i> Sửa
+            </button>
+            <button class="btn btn-outline-danger rounded-pill px-3" onclick="deleteMember(@Model.MaBenhNhan)">
+                <i class="fa-solid fa-trash me-1"></i> Xóa
+            </button>
+        </div>
+    </div>
+</div>

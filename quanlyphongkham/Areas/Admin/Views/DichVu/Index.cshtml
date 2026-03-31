@@ -1,0 +1,125 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Dịch vụ";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800 fw-bold">
+            <i class="fas fa-stethoscope me-2 text-primary"></i>@ViewData["Title"]
+        </h1>
+        <button class="btn btn-primary shadow-sm btn-add-main" onclick="openCreateDichVu()">
+            <i class="fas fa-concierge-bell me-1"></i> Thêm dịch vụ mới
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header py-3 bg-white d-flex justify-content-between align-items-center flex-wrap">
+            <h6 class="m-0 font-weight-bold text-primary">Danh sách dịch vụ</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                    <input type="text" id="searchDichVu" class="form-control" placeholder="Tìm kiếm theo tên dịch vụ..." oninput="debounceSearchDichVu()" />
+                </div>
+                <div class="col-md-3">
+                    <select id="sortDichVu" class="form-select" onchange="loadDichVuList()">
+                        <option value="">Sắp xếp</option>
+                        <option value="price_asc">Giá tăng dần</option>
+                        <option value="price_desc">Giá giảm dần</option>
+                    </select>
+                </div>
+            </div>
+            <div id="dichVuContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="dichVuModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="dichVuModalLabel">Cập nhật</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="dichVuModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(() => loadDichVuList());
+
+        function loadDichVuList() {
+            var search = $('#searchDichVu').val();
+            var sort = $('#sortDichVu').val();
+            $.get('@Url.Action("IndexPartial", "DichVu")', { search: search, sort: sort }, function (data) {
+                $('#dichVuContainer').html(data);
+            });
+        }
+
+        var searchTimeout;
+        function debounceSearchDichVu() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadDichVuList, 500);
+        }
+
+        function openCreateDichVu() {
+            $.get('@Url.Action("CreatePartial", "DichVu")', function (data) {
+                $('#dichVuModalLabel').text("Thêm dịch vụ mới");
+                $('#dichVuModalBody').html(data);
+                $('#dichVuModal').modal('show');
+            });
+        }
+
+        function openEditDichVu(id) {
+            $.get('@Url.Action("EditPartial", "DichVu")', { id: id }, function (data) {
+                $('#dichVuModalLabel').text("Sửa dịch vụ");
+                $('#dichVuModalBody').html(data);
+                $('#dichVuModal').modal('show');
+            });
+        }
+
+        function openPriceManager(id, name) {
+            $.get('@Url.Action("GetPrices", "DichVu")', { id: id }, function (data) {
+                $('#dichVuModalLabel').html('<i class="fas fa-history me-2"></i>Lịch sử giá: ' + name);
+                $('#dichVuModalBody').html(data);
+                $('#dichVuModal').modal('show');
+            });
+        }
+
+        function toggleTrangThaiDichVu(id, name, newStatus) {
+            var actionText = newStatus === 'Ngưng' ? 'NGƯNG sử dụng' : 'KHÔI PHỤC';
+            if (!confirm("Bạn có chắc chắn muốn " + actionText + " dịch vụ: '" + name + "'?")) return;
+
+            var token = $('input[name="__RequestVerificationToken"]').first().val();
+
+            $.post('@Url.Action("ToggleStatus", "DichVu")', { id: id, __RequestVerificationToken: token }, function (res) {
+                if (res.success) {
+                    toastr.success(res.message);
+                    loadDichVuList(); // Tải lại bảng ngay lập tức
+                } else {
+                    toastr.error(res.message);
+                }
+            }).fail(function () {
+                toastr.error("Có lỗi kết nối đến máy chủ.");
+            });
+        }
+
+        function deletePrice(priceId) {
+            if (!confirm("Xóa bản ghi giá này?")) return;
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            $.post('@Url.Action("DeletePrice", "DichVu")', { id: priceId, __RequestVerificationToken: token }, function (res) {
+                if (res.success) {
+                    toastr.success("Đã xóa bản ghi giá.");
+                    var maDv = $('input[name="maDichVu"]').val();
+                    openPriceManager(maDv, '');
+                    loadDichVuList();
+                }
+            });
+        }
+    </script>
+}

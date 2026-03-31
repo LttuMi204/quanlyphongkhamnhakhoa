@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Đặt lịch hẹn";
+}
+
+<section class="py-5">
+    <div class="container">
+        <h2 class="fw-bold text-primary">Đặt lịch hẹn khám</h2>
+        <form asp-action="Create" method="post">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Chọn bệnh nhân</label>
+                    <select name="maBenhNhan" class="form-select" required>
+                        <option value="">Chọn</option>
+                        @foreach (var bn in ViewBag.BenhNhans)
+                        {
+                            <option value="@bn.Value">@bn.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Chọn bác sĩ</label>
+                    <select name="maBacSi" class="form-select" required>
+                        <option value="">Chọn</option>
+                        @foreach (var bs in ViewBag.BacSis)
+                        {
+                            <option value="@bs.Value">@bs.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Chọn dịch vụ</label>
+                    <select name="maDichVu" class="form-select" required>
+                        <option value="">Chọn</option>
+                        @foreach (var dv in ViewBag.DichVus)
+                        {
+                            <option value="@dv.Value">@dv.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Ngày hẹn</label>
+                    <input type="date" name="ngayHen" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Giờ hẹn</label>
+                    <input type="time" name="gioHen" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Chọn ghế (không bắt buộc)</label>
+                    <select name="maGhe" class="form-select">
+                        <option value="">Không chọn</option>
+                        @foreach (var ghe in ViewBag.Ghes)
+                        {
+                            <option value="@ghe.Value">@ghe.Text</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary rounded-pill">Xác nhận đặt lịch</button>
+            <a asp-action="Index" asp-controller="Home" class="btn btn-outline-secondary rounded-pill">Hủy</a>
+        </form>
+    </div>
+</section>

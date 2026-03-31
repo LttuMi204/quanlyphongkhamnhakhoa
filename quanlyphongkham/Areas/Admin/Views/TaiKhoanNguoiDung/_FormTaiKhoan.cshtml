@@ -1,0 +1,113 @@
+﻿@model quanlyphongkham.Models.TaiKhoanNguoiDung
+
+<form asp-action="CreatePartial" asp-controller="TaiKhoanNguoiDung" asp-area="Admin" method="post" id="formTaoTaiKhoan">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 fw-bold"></div>
+
+    <div class="row">
+        <div class="col-md-6 border-end">
+            <h6 class="text-success border-bottom pb-2 mb-3">
+                <i class="fas fa-shield-alt me-2"></i>Thông tin đăng nhập
+            </h6>
+
+            <div class="mb-3">
+                <label asp-for="TenDangNhap" class="form-label fw-bold">Tên đăng nhập <span class="text-danger">*</span></label>
+                <input asp-for="TenDangNhap" class="form-control" required placeholder="Nhập tên viết liền không dấu..." />
+                <span asp-validation-for="TenDangNhap" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MatKhau" class="form-label fw-bold">Mật khẩu</label>
+                <input asp-for="MatKhau" class="form-control" type="password" placeholder="Mặc định là 123456 (Nếu bỏ trống)" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TrangThai" class="form-label fw-bold">Trạng thái</label>
+                <select asp-for="TrangThai" class="form-select">
+                    <option value="Hoạt động">Hoạt động</option>
+                    <option value="Bị khóa">Bị khóa</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h6 class="text-primary border-bottom pb-2 mb-3">
+                <i class="fas fa-user-check me-2"></i>Thông tin chủ tài khoản
+            </h6>
+
+            <div class="mb-3">
+                <label asp-for="HoTen" class="form-label fw-bold">Họ tên <span class="text-danger">*</span></label>
+                <input asp-for="HoTen" class="form-control" required placeholder="Nhập họ và tên..." />
+                <span asp-validation-for="HoTen" class="text-danger small"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SoDienThoai" class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
+                    <input asp-for="SoDienThoai" class="form-control" required pattern="^0[0-9]{9}$" placeholder="09xxxxxxxx" title="Vui lòng nhập SĐT 10 số bắt đầu bằng 0" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="GioiTinh" class="form-label fw-bold">Giới tính</label>
+                    <select asp-for="GioiTinh" class="form-select">
+                        <option value="">Chọn</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label fw-bold">Email</label>
+                <input asp-for="Email" class="form-control" type="email" placeholder="email@example.com" />
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Hủy bỏ
+        </button>
+        <button type="submit" class="btn btn-primary" id="btnSubmitTK">
+            <i class="fas fa-save me-1"></i>Tạo tài khoản
+        </button>
+    </div>
+</form>
+
+<script>
+    $('#formTaoTaiKhoan').submit(function (e) {
+        e.preventDefault();
+
+        var form = $(this);
+        var btn = $('#btnSubmitTK');
+
+        // Hiệu ứng loading nút bấm
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang lưu...');
+
+        $.ajax({
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: form.serialize(),
+            success: function (res) {
+                if (res.success) {
+                    $('#mainModal').modal('hide');
+                    toastr.success(res.message);
+
+                    // Cập nhật lại bảng danh sách
+                    if (typeof loadTabTaiKhoan === "function") {
+                        loadTabTaiKhoan(1);
+                    }
+                } else {
+                    // Nếu lỗi validation (Trùng SĐT, trùng tên...), nạp lại form với chữ đỏ
+                    $('#mainModalBody').html(res);
+                }
+            },
+            error: function () {
+                toastr.error('Đã xảy ra lỗi hệ thống, không thể kết nối tới máy chủ!');
+                btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i>Tạo tài khoản');
+            }
+        });
+    });
+</script>

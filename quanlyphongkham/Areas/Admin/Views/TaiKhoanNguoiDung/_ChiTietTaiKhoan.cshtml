@@ -1,0 +1,186 @@
+﻿@model quanlyphongkham.Models.TaiKhoanNguoiDung
+
+<div id="tkTokenContainer">
+    @Html.AntiForgeryToken()
+</div>
+
+<div id="taiKhoanMainContent">
+    <div class="row">
+        <div class="col-md-3 border-end">
+            <h6 class="font-weight-bold text-success border-bottom pb-2 mb-3"><i class="fas fa-shield-alt me-2"></i>Thông tin tài khoản</h6>
+            <table class="table table-borderless table-sm mb-4">
+                <tr><th class="text-muted">Tên ĐN:</th><td class="text-success fw-bold">@Model.TenDangNhap</td></tr>
+                <tr><th class="text-muted">Họ tên:</th><td class="text-primary fw-bold">@Model.HoTen</td></tr>
+                <tr><th class="text-muted">Số ĐT:</th><td>@Model.SoDienThoai</td></tr>
+                <tr><th class="text-muted">Email:</th><td>@(Model.Email ?? "N/A")</td></tr>
+                <tr>
+                    <th class="text-muted">Trạng thái:</th>
+                    <td>
+                        <span class="badge @(Model.TrangThai == "Hoạt động" ? "bg-success" : "bg-danger")">@Model.TrangThai</span>
+                    </td>
+                </tr>
+                <tr><th class="text-muted">Ngày tạo:</th><td class="text-muted small">@(Model.NgayTao?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td></tr>
+            </table>
+            <h6 class="font-weight-bold text-info border-bottom pb-2 mb-3 mt-4"><i class="fas fa-link me-2"></i>Thêm liên kết</h6>
+            <div class="bg-light p-3 rounded border">
+                <input type="hidden" id="linkMaTK" value="@Model.MaTaiKhoan" />
+                <div class="mb-2">
+                    <input type="text" id="linkSDT" class="form-control form-control-sm" placeholder="SĐT bệnh nhân..." />
+                </div>
+                <div class="mb-3">
+                    <select id="linkQuanHe" class="form-select form-select-sm">
+                        <option value="">Quan hệ</option>
+                        <option value="Bản thân">Bản thân</option>
+                        <option value="Cha">Cha</option>
+                        <option value="Mẹ">Mẹ</option>
+                        <option value="Vợ">Vợ</option>
+                        <option value="Chồng">Chồng</option>
+                        <option value="Con">Con</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                <button class="btn btn-sm btn-info text-white w-100" onclick="themLienKetBN()"><i class="fas fa-plus"></i> Thêm</button>
+            </div>
+        </div>
+        <div class="col-md-9 pl-3">
+            <!-- DANH SÁCH HỒ SƠ (ban đầu hiển thị) -->
+            <div id="hoSoListContainer">
+                <h6 class="font-weight-bold text-primary border-bottom pb-2 mb-3"><i class="fas fa-users me-2"></i>Bệnh nhân liên kết (@(Model.QuanHeBenhNhans?.Count ?? 0))</h6>
+                @if (Model.QuanHeBenhNhans != null && Model.QuanHeBenhNhans.Any())
+                {
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã BN</th>
+                                    <th>Họ tên bệnh nhân</th>
+                                    <th>Số điện thoại</th>
+                                    <th class="text-center">Quan hệ</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var qh in Model.QuanHeBenhNhans)
+                                {
+                                    <tr>
+                                        <td>#@qh.MaBenhNhan</td>
+                                        <td class="fw-bold text-primary">@qh.BenhNhan.HoTen</td>
+                                        <td>@qh.BenhNhan.SoDienThoai</td>
+                                        <td class="text-center"><span class="badge bg-secondary">@qh.QuanHe</span></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-danger" onclick="goLienKetBN(@Model.MaTaiKhoan, @qh.MaBenhNhan)">
+                                                <i class="fas fa-unlink"></i> Gỡ
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4 mb-4 bg-light rounded border-dashed">
+                        <i class="fas fa-user-slash fa-2x text-muted mb-2"></i>
+                        <p class="text-muted fst-italic mb-0">Tài khoản này chưa liên kết với bệnh nhân nào.</p>
+                    </div>
+                }
+
+                <h6 class="font-weight-bold text-primary border-bottom pb-2 mb-3 mt-2"><i class="fas fa-folder-open me-2"></i>Hồ sơ bệnh án trực thuộc</h6>
+                @if (ViewBag.HoSoList != null && ((IEnumerable<quanlyphongkham.Models.HoSoBenhAn>)ViewBag.HoSoList).Any())
+                {
+                    <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                        <table class="table table-bordered table-hover table-sm align-middle">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                                <tr>
+                                    <th>Ngày khám</th>
+                                    <th>Bệnh nhân</th>
+                                    <th>Bác sĩ</th>
+                                    <th>Triệu chứng / Chẩn đoán</th>
+                                    <th class="text-end">Tổng tiền</th>
+                                    <th class="text-center">Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var hs in (IEnumerable<quanlyphongkham.Models.HoSoBenhAn>)ViewBag.HoSoList)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="fw-bold d-block text-nowrap">@hs.NgayKham.ToString("dd/MM/yyyy")</span>
+                                            <span class="small text-muted">@hs.NgayKham.ToString("HH:mm")</span>
+                                        </td>
+                                        <td class="text-primary fw-bold text-nowrap">@(hs.BenhNhan?.HoTen ?? "N/A")</td>
+                                        <td class="text-nowrap">@(hs.BacSi?.NhanVien?.HoTen ?? "N/A")</td>
+                                        <td>
+                                            <div class="small text-muted mb-1 text-truncate" style="max-width: 250px;" title="@hs.TrieuChung">
+                                                <i class="fas fa-caret-right me-1"></i>@(string.IsNullOrEmpty(hs.TrieuChung) ? "..." : hs.TrieuChung)
+                                            </div>
+                                            <div class="text-truncate fw-bold text-dark" style="max-width: 250px;" title="@hs.ChanDoan">
+                                                <i class="fas fa-stethoscope text-danger me-1"></i>@(string.IsNullOrEmpty(hs.ChanDoan) ? "Chưa kết luận" : hs.ChanDoan)
+                                            </div>
+                                        </td>
+                                        <td class="text-end fw-bold text-danger text-nowrap">@hs.TongTien.ToString("N0")đ</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-info" onclick="xemChiTietHoSoTuTaiKhoan(@hs.MaHoSo)" title="Xem hồ sơ này">
+                                                <i class="fas fa-arrow-right"></i> Xem
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4 bg-light rounded border-dashed">
+                        <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                        <p class="text-muted fst-italic mb-0">Không có hồ sơ khám nào thuộc danh sách bệnh nhân liên kết.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- CHI TIẾT CA KHÁM (ẩn ban đầu) -->
+            <div id="hoSoDetailContainer" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 bg-light p-2 rounded">
+                    <h6 class="text-primary m-0 fw-bold"><i class="fas fa-file-medical-alt me-2"></i>Chi tiết ca khám</h6>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="quayLaiThongTinTaiKhoan()">
+                        <i class="fas fa-arrow-left me-1"></i> Trở về danh sách
+                    </button>
+                </div>
+                <div id="noidungHoSoContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i> Đóng
+        </button>
+    </div>
+</div>
+
+<script>
+    function xemChiTietHoSoTuTaiKhoan(maHoSo) {
+        // Ẩn danh sách hồ sơ, hiện khung chi tiết
+        $('#hoSoListContainer').hide();
+        $('#hoSoDetailContainer').fadeIn(300);
+        $('#noidungHoSoContainer').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Đang tải dữ liệu hồ sơ...</p></div>');
+
+        // Gọi AJAX lấy chi tiết hồ sơ
+        $.get('@Url.Action("ChiTietPartial", "HoSoBenhAn", new { area = "Admin" })', { id: maHoSo }, function (data) {
+            $('#noidungHoSoContainer').html(data);
+            // Ẩn footer thừa trong partial _ChiTietHoSo (nếu có)
+            $('#noidungHoSoContainer .modal-footer').hide();
+        }).fail(function () {
+            $('#noidungHoSoContainer').html('<div class="alert alert-danger">Lỗi tải dữ liệu. Vui lòng thử lại!</div>');
+        });
+    }
+
+    function quayLaiThongTinTaiKhoan() {
+        $('#hoSoDetailContainer').hide();
+        $('#hoSoListContainer').fadeIn(300);
+        $('#noidungHoSoContainer').empty();
+    }
+</script>

@@ -1,0 +1,418 @@
+﻿@model IEnumerable<quanlyphongkham.Models.LichLamViec>
+
+<style>
+    /* Chiều cao ô lịch để tạo cảm giác vuông vức, chứa khoảng 3-5 người */
+    .cell-scroll {
+        min-height: 160px;
+        max-height: 220px;
+        overflow-y: auto;
+        align-content: flex-start;
+        padding-right: 3px;
+    }
+
+        /* Thu nhỏ thẻ tên nhân viên một chút để vừa vặn hơn khi cột bị ép nhỏ */
+        .cell-scroll .badge {
+            font-size: 0.8rem !important;
+            padding: 6px !important;
+            margin-bottom: 5px !important;
+        }
+
+            .cell-scroll .badge .btn-sm {
+                font-size: 0.65rem !important;
+                padding: 0 6px !important;
+            }
+
+        /* Tuỳ chỉnh thanh cuộn nhỏ gọn */
+        .cell-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .cell-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .cell-scroll::-webkit-scrollbar-track {
+            background-color: #f8f9fc;
+        }
+</style>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-calendar-alt me-2"></i>Bảng Phân Công Lịch Làm Việc</h6>
+        <button type="button" class="btn btn-sm btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addLichModal">
+            <i class="fas fa-calendar-plus me-1"></i> Phân ca làm việc
+        </button>
+    </div>
+
+    <div class="card-body bg-light border-bottom py-3">
+        <form class="row g-3 align-items-end" onsubmit="event.preventDefault();">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold mb-1 text-muted">Tìm nhân viên / bác sĩ</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="searchNameLich" class="form-control border-start-0" placeholder="Gõ tên để tìm..." value="@ViewBag.SearchName" oninput="debounceSearchLich()" />
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold mb-1 text-muted">Xem theo Ngày</label>
+                <select id="filterXemThuLich" class="form-select" onchange="loadTabLichLamViec()">
+                    <option value="">Cả tuần</option>
+                    @for (int i = 2; i <= 8; i++)
+                    {
+                        var thuStr = i == 8 ? "Chủ nhật" : $"Thứ {i}";
+                        <option value="@i" selected="@(ViewBag.XemThu == i)">@thuStr</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold mb-1 text-muted">Lọc theo Ca</label>
+                <select id="filterCaLamLich" class="form-select" onchange="loadTabLichLamViec()">
+                    <option value="">Tất cả ca</option>
+                    <option value="Sáng" selected="@(ViewBag.CaLam == "Sáng")">Ca Sáng</option>
+                    <option value="Chiều" selected="@(ViewBag.CaLam == "Chiều")">Ca Chiều</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small fw-bold mb-1 text-muted">Lọc chức vụ</label>
+                <select id="filterMaLoaiNVLich" class="form-select" asp-items="ViewBag.LoaiNhanVienList" onchange="loadTabLichLamViec()">
+                    <option value="">Toàn bộ chức vụ</option>
+                </select>
+            </div>
+
+            <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-outline-secondary w-100" onclick="loadTabLichLamViec()" title="Tải lại">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive overflow-hidden">
+            <table class="table table-bordered text-center align-middle mb-0" style="width: 100%; table-layout: fixed;">
+                <thead class="table-primary text-dark">
+                    <tr>
+                        <th style="width: 9%;">Ca</th>
+                        @for (int thu = 2; thu <= 8; thu++)
+                        {
+                            if (ViewBag.XemThu == null || ViewBag.XemThu == thu)
+                            {
+                                string title = thu == 8 ? "CN" : $"T{thu}"; // Rút gọn chữ Thứ thành T2, T3, CN cho đỡ tốn chỗ
+                                string textColor = thu == 8 ? "text-danger" : "";
+                                <th><span class="@textColor">@title</span></th>
+                            }
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="bg-light align-middle">
+                            <span class="fw-bold text-primary fs-6">Ca Sáng</span><br />
+                            <small class="text-muted"><i class="far fa-clock me-1"></i>07:30 - 12:00</small>
+                        </td>
+                        @for (int thu = 2; thu <= 8; thu++)
+                        {
+                            if (ViewBag.XemThu == null || ViewBag.XemThu == thu)
+                            {
+                                <td class="align-top p-2 text-start bg-white">
+                                    <div class="d-flex flex-column gap-2 cell-scroll">
+                                        @if (string.IsNullOrEmpty(ViewBag.CaLam) || ViewBag.CaLam == "Sáng")
+                                        {
+                                            var nvs = Model.Where(l => l.Thu == thu && (l.CaLam == "Sáng" || l.CaLam == "Cả ngày")).ToList();
+                                            foreach (var item in nvs)
+                                            {
+                                                string badgeClass = item.NhanVien.MaLoaiNV == 2 ? "bg-info text-white border-info" : "bg-warning text-dark border-warning";
+                                                string textCaNgay = item.CaLam == "Cả ngày" ? "(Cả ngày)" : "";
+
+                                                <div class="badge @badgeClass p-2 shadow-sm rounded-2 border text-start w-100" style="font-size: 0.85rem; white-space: normal;">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div class="fw-bold" style="line-height: 1.3;">
+                                                            @item.NhanVien.HoTen
+                                                            @if (!string.IsNullOrEmpty(textCaNgay))
+                                                            {
+                                                                <div class="fst-italic opacity-75 fw-normal small mt-1">@textCaNgay</div>
+                                                            }
+                                                        </div>
+                                                        <i class="fas fa-info-circle ms-1 mt-1" style="cursor:pointer; font-size: 1rem;" onclick="openThongKeModal(@item.MaNhanVien)" title="Xem chi tiết nhân sự"></i>
+                                                    </div>
+
+                                                    <div class="mt-2 text-end border-top border-light border-opacity-25 pt-2">
+                                                        <button type="button" class="btn btn-sm btn-light py-0 px-2 rounded-pill text-dark shadow-sm" style="font-size: 0.7rem;" onclick="openEditLichModal(@item.MaLich, '@item.NhanVien.HoTen', @item.Thu, '@item.CaLam')" title="Sửa ca làm việc">
+                                                            <i class="fas fa-edit text-primary"></i> Sửa lịch
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                            }
+                        }
+                    </tr>
+
+                    <tr>
+                        <td class="bg-light align-middle">
+                            <span class="fw-bold text-success fs-6">Ca Chiều</span><br />
+                            <small class="text-muted"><i class="far fa-clock me-1"></i>14:00 - 19:30</small>
+                        </td>
+                        @for (int thu = 2; thu <= 8; thu++)
+                        {
+                            if (ViewBag.XemThu == null || ViewBag.XemThu == thu)
+                            {
+                                <td class="align-top p-2 text-start bg-white">
+                                    <div class="d-flex flex-column gap-2 cell-scroll">
+                                        @if (string.IsNullOrEmpty(ViewBag.CaLam) || ViewBag.CaLam == "Chiều")
+                                        {
+                                            var nvs = Model.Where(l => l.Thu == thu && (l.CaLam == "Chiều" || l.CaLam == "Cả ngày")).ToList();
+                                            foreach (var item in nvs)
+                                            {
+                                                string badgeClass = item.NhanVien.MaLoaiNV == 2 ? "bg-info text-white border-info" : "bg-warning text-dark border-warning";
+                                                string textCaNgay = item.CaLam == "Cả ngày" ? "(Cả ngày)" : "";
+
+                                                <div class="badge @badgeClass p-2 shadow-sm rounded-2 border text-start w-100" style="font-size: 0.85rem; white-space: normal;">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div class="fw-bold" style="line-height: 1.3;">
+                                                            @item.NhanVien.HoTen
+                                                            @if (!string.IsNullOrEmpty(textCaNgay))
+                                                            {
+                                                                <div class="fst-italic opacity-75 fw-normal small mt-1">@textCaNgay</div>
+                                                            }
+                                                        </div>
+                                                        <i class="fas fa-info-circle ms-1 mt-1" style="cursor:pointer; font-size: 1rem;" onclick="openThongKeModal(@item.MaNhanVien)" title="Xem chi tiết nhân sự"></i>
+                                                    </div>
+
+                                                    <div class="mt-2 text-end border-top border-light border-opacity-25 pt-2">
+                                                        <button type="button" class="btn btn-sm btn-light py-0 px-2 rounded-pill text-dark shadow-sm" style="font-size: 0.7rem;" onclick="openEditLichModal(@item.MaLich, '@item.NhanVien.HoTen', @item.Thu, '@item.CaLam')" title="Sửa ca làm việc">
+                                                            <i class="fas fa-edit text-primary"></i> Sửa lịch
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                            }
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addLichModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-calendar-plus me-2"></i>Phân ca làm việc mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formAddLich">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Nhân viên / Bác sĩ <span class="text-danger">*</span></label>
+                        <select name="maNhanVien" id="selectAddNhanVienLich" class="form-select" required asp-items="ViewBag.NhanVienList">
+                            <option value="">-- Chọn hoặc gõ tên nhân sự --</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-dark">Ngày làm việc <span class="text-danger">*</span></label>
+                            <select name="thu" class="form-select" required>
+                                <option value="">-- Chọn ngày --</option>
+                                <option value="2">Thứ 2</option>
+                                <option value="3">Thứ 3</option>
+                                <option value="4">Thứ 4</option>
+                                <option value="5">Thứ 5</option>
+                                <option value="6">Thứ 6</option>
+                                <option value="7">Thứ 7</option>
+                                <option value="8">Chủ nhật</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-dark">Ca làm việc <span class="text-danger">*</span></label>
+                            <select name="caLam" class="form-select" required>
+                                <option value="">-- Chọn ca --</option>
+                                <option value="Sáng">Ca Sáng</option>
+                                <option value="Chiều">Ca Chiều</option>
+                                <option value="Cả ngày">Cả ngày</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary shadow-sm"><i class="fas fa-save me-1"></i>Lưu phân ca</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editLichModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h6 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>Chỉnh sửa ca làm việc</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formEditLich">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editMaLich" name="id" />
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-muted mb-0">Nhân viên / Bác sĩ</label>
+                        <div id="editTenNV" class="fw-bold text-primary fs-6"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted mb-0">Ngày làm việc</label>
+                        <div id="editThu" class="fw-bold text-dark"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Ca làm việc <span class="text-danger">*</span></label>
+                        <select name="caLamMoi" id="editCaLam" class="form-select" required>
+                            <option value="Sáng">Ca Sáng</option>
+                            <option value="Chiều">Ca Chiều</option>
+                            <option value="Cả ngày">Cả ngày (Sáng + Chiều)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light d-flex justify-content-between">
+                    <button type="button" class="btn btn-danger btn-sm shadow-sm" onclick="deleteLichFromEdit()"><i class="fas fa-trash me-1"></i>Xóa lịch</button>
+                    <div>
+                        <button type="button" class="btn btn-secondary btn-sm shadow-sm" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-warning btn-sm shadow-sm"><i class="fas fa-save me-1"></i>Cập nhật</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var searchLichTimeout;
+
+    function debounceSearchLich() {
+        window.isTypingSearchLich = true;
+        clearTimeout(searchLichTimeout);
+        searchLichTimeout = setTimeout(function () {
+            loadTabLichLamViec();
+        }, 500);
+    }
+
+    $(document).ready(function () {
+        if (window.isTypingSearchLich) {
+            let $searchInput = $('#searchNameLich');
+            if ($searchInput.length) {
+                $searchInput.focus();
+                let val = $searchInput.val();
+                $searchInput.val('').val(val);
+            }
+            window.isTypingSearchLich = false;
+        }
+
+        $('#addLichModal').on('shown.bs.modal', function () {
+            $('#selectAddNhanVienLich').select2({
+                dropdownParent: $('#addLichModal'), width: '100%', placeholder: "-- Chọn hoặc gõ tên nhân sự --"
+            });
+        });
+
+        $('#addLichModal').on('hidden.bs.modal', function () {
+            if ($('#selectAddNhanVienLich').hasClass("select2-hidden-accessible")) {
+                $('#selectAddNhanVienLich').select2('destroy');
+            }
+            $('#formAddLich')[0].reset();
+        });
+
+        // Xử lý nút Thêm mới
+        $('#formAddLich').off('submit').on('submit', function (e) {
+            e.preventDefault();
+            var btn = $(this).find('button[type="submit"]');
+            var originalText = btn.html();
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang xử lý...');
+
+            $.ajax({
+                url: '@Url.Action("AddLichLamViec", "LichLamViec", new { area = "Admin" })',
+                type: 'POST', data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        $('#addLichModal').modal('hide');
+                        $('body').removeClass('modal-open'); $('.modal-backdrop').remove();
+                        toastr.success(res.message);
+                        loadTabLichLamViec();
+                    } else {
+                        toastr.error(res.message);
+                        btn.prop('disabled', false).html(originalText);
+                    }
+                },
+                error: function () {
+                    toastr.error('Lỗi kết nối đến máy chủ!');
+                    btn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+
+        // Xử lý nút Cập nhật sửa ca
+        $('#formEditLich').off('submit').on('submit', function (e) {
+            e.preventDefault();
+            var btn = $(this).find('button[type="submit"]');
+            var oldText = btn.html();
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+            $.post('@Url.Action("EditLichLamViec", "LichLamViec", new { area = "Admin" })', $(this).serialize(), function (res) {
+                if (res.success) {
+                    $('#editLichModal').modal('hide');
+                    $('body').removeClass('modal-open'); $('.modal-backdrop').remove();
+                    toastr.success(res.message);
+                    loadTabLichLamViec(); // Tải lại bảng
+                } else {
+                    toastr.error(res.message);
+                    btn.prop('disabled', false).html(oldText);
+                }
+            });
+        });
+    });
+
+    // Mở modal Edit
+    function openEditLichModal(maLich, tenNV, thu, caLam) {
+        $('#editMaLich').val(maLich);
+        $('#editTenNV').text(tenNV);
+        $('#editThu').text(thu === 8 ? 'Chủ nhật' : 'Thứ ' + thu);
+        $('#editCaLam').val(caLam);
+        $('#editLichModal').modal('show');
+    }
+
+    // Xóa ngay trong Form Edit
+    function deleteLichFromEdit() {
+        if (!confirm("Bạn có chắc chắn muốn XÓA lịch làm việc này khỏi hệ thống?")) return;
+
+        var id = $('#editMaLich').val();
+        var token = $('#formEditLich input[name="__RequestVerificationToken"]').val();
+
+        $.post('@Url.Action("DeleteLichLamViec", "LichLamViec", new { area = "Admin" })', { id: id, __RequestVerificationToken: token }, function (res) {
+            if (res.success) {
+                $('#editLichModal').modal('hide');
+                $('body').removeClass('modal-open'); $('.modal-backdrop').remove();
+                toastr.success(res.message);
+                loadTabLichLamViec();
+            } else {
+                toastr.error(res.message);
+            }
+        });
+    }
+
+    function openThongKeModal(maNV) {
+        $.get('@Url.Action("ThongKeChiTietPartial", "LichLamViec", new { area = "Admin" })', { id: maNV }, function (data) {
+            $('#mainHrModalLabel').html('<i class="fas fa-calendar-check me-2"></i>Chi tiết lịch làm việc');
+            $('#mainHrModalBody').html(data);
+            $('#mainHrModal').modal("show");
+        }).fail(function () {
+            toastr.error('Lỗi khi tải dữ liệu nhân viên!');
+        });
+    }
+</script>

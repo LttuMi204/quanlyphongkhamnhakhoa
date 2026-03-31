@@ -1,0 +1,75 @@
+﻿@model quanlyphongkham.Models.BenhNhan
+
+<div class="card border-warning shadow-sm rounded-4 mb-4 animate__animated animate__fadeIn">
+    <div class="card-header bg-warning bg-opacity-10 border-0 py-3">
+        <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-user-pen me-2"></i>Chỉnh sửa hồ sơ người thân</h6>
+    </div>
+    <div class="card-body p-4">
+        <form id="formEditFamilyMember" asp-action="UpdateFamilyMember" asp-controller="ProfileWeb" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaBenhNhan" />
+
+            <div class="row">
+                <div class="col-md-6 border-end pe-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                        <input type="text" asp-for="HoTen" class="form-control rounded-pill" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Quan hệ <span class="text-danger">*</span></label>
+                            <select name="QuanHe" class="form-select rounded-pill" required>
+                                <!option value="Con" @(ViewBag.QuanHeHienTai == "Con" ? "selected" : "")>Con</!option>
+                                <!option value="Vợ" @(ViewBag.QuanHeHienTai == "Vợ" ? "selected" : "")>Vợ</!option>
+                                <!option value="Chồng" @(ViewBag.QuanHeHienTai == "Chồng" ? "selected" : "")>Chồng</!option>
+                                <!option value="Cha" @(ViewBag.QuanHeHienTai == "Cha" ? "selected" : "")>Cha</!option>
+                                <!option value="Mẹ" @(ViewBag.QuanHeHienTai == "Mẹ" ? "selected" : "")>Mẹ</!option>
+                                <!option value="Anh" @(ViewBag.QuanHeHienTai == "Anh" ? "selected" : "")>Anh</!option>
+                                <!option value="Chị" @(ViewBag.QuanHeHienTai == "Chị" ? "selected" : "")>Chị</!option>
+                                <!option value="Em" @(ViewBag.QuanHeHienTai == "Em" ? "selected" : "")>Em</!option>
+                                <!option value="Khác" @(ViewBag.QuanHeHienTai == "Khác" ? "selected" : "")>Khác</!option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Ngày sinh</label>
+                            <input type="date" asp-for="NgaySinh" class="form-control rounded-pill">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Giới tính</label>
+                            <select asp-for="GioiTinh" class="form-select rounded-pill">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Số điện thoại</label>
+                            <input type="text" asp-for="SoDienThoai" class="form-control rounded-pill">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Địa chỉ</label>
+                        <textarea asp-for="DiaChi" class="form-control rounded-4" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="col-md-6 ps-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-danger">Tiền sử bệnh lý</label>
+                        <textarea asp-for="TienSuBenh" class="form-control rounded-4" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-info">Ghi chú bệnh lý (Răng miệng)</label>
+                        <textarea name="GhiChu" class="form-control rounded-4" rows="2" placeholder="Ví dụ: Cần khám sâu răng...">Không</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end gap-2 border-top pt-3">
+                <button type="button" class="btn btn-light rounded-pill px-4 border" onclick="viewFamilyDetail(@Model.MaBenhNhan)">Hủy bỏ</button>
+                <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold" id="btnSubmitEditFamily">LƯU THAY ĐỔI</button>
+            </div>
+        </form>
+    </div>
+</div>

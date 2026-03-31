@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project>
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAtpFQ9xtRtEWfmdNtzgLgtgAAAAACAAAAAAAQZgAAAAEAACAAAACQot2K8Wc/9f8qsqPdPe9UfffawmkL4Bu8Gj3lHUfKaQAAAAAOgAAAAAIAACAAAAALWbteuKUKkxPnEUoXmnYGYQ7ThE2j0dWWGcpHi8VmdiAAAADgkOnUEic4n3E/u/fWR72AiVRKlj/sxeG6ipnnMVk8skAAAADDO2ITKaiyghgmWtEYNcfc2keb/1ajdqAPgwkDVSzH1OxxflTG3S8ZUfW696585UVqNJ0Xklh0QNeiRBt5jZ2R</EncryptedPassword>
+    <History>False|2026-03-27T07:02:07.6671977Z;False|2026-03-27T13:58:33.8556899+07:00;False|2026-03-27T13:55:19.1031871+07:00;False|2026-03-27T13:54:36.8237770+07:00;False|2026-03-27T13:53:10.4900496+07:00;True|2026-03-27T13:39:48.3460535+07:00;True|2026-03-27T13:23:10.0706443+07:00;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="DefaultConnection">
+      <Value>Server=SQL5111.site4now.net%3bDatabase=db_ac7405_dbqlpk%3bUser Id=db_ac7405_dbqlpk_admin%3bPassword=Lethitumi2004%40%3bTrustServerCertificate=True%3b</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,45 @@
+﻿/* Tùy chỉnh màu sắc chủ đạo */
+:root {
+    --primary-color: #1b6ec2;
+    --soft-bg: #f8f9fa;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--soft-bg);
+}
+
+/* Nút bấm bo tròn & hiệu ứng */
+.btn-primary-custom {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50px;
+    transition: all 0.3s;
+}
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(27, 110, 194, 0.3);
+    }
+
+/* Card hiệu ứng đổ bóng nhẹ */
+.feature-card {
+    transition: all 0.3s;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+    }
+
+/* Bo góc cho các thành phần */
+.rounded-4 {
+    border-radius: 1.5rem !important;
+}
+
+/* Navbar hiệu ứng */
+.navbar {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.9);
+}

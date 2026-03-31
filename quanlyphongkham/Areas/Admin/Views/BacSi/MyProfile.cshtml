@@ -1,0 +1,95 @@
+﻿@model quanlyphongkham.Models.BacSi
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Hồ sơ của tôi";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-user-circle me-2"></i>THÔNG TIN CÁ NHÂN BÁC SĨ</h5>
+
+                    @* NÚT TẠO LỊCH HẸN: Dẫn về giao diện quản lý lịch hẹn *@
+                    <a href="/Admin/LichHen/Index" class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm">
+                        <i class="fas fa-calendar-plus me-1 text-primary"></i> TẠO LỊCH HẸN
+                    </a>
+                </div>
+
+                <div class="card-body p-4">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="UpdateMyProfile" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="MaBacSi" />
+
+                        <div class="row g-4">
+                            @* CỘT 1: THÔNG TIN CƠ BẢN *@
+                            <div class="col-md-6 border-end pe-md-4">
+                                <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">Thông tin liên hệ</h6>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Họ và tên</label>
+                                    <input type="text" name="HoTen" value="@Model.NhanVien.HoTen" class="form-control rounded-pill bg-light" readonly />
+                                    <small class="text-muted">Liên hệ Admin để đổi tên hiển thị.</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Số điện thoại</label>
+                                    <input type="text" name="SoDienThoai" value="@Model.NhanVien.SoDienThoai" class="form-control rounded-pill" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Email cá nhân</label>
+                                    <input type="email" name="Email" value="@Model.NhanVien.Email" class="form-control rounded-pill" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Giới thiệu bản thân (Hiện trên Website)</label>
+                                    <textarea name="GioiThieu" class="form-control rounded-3" rows="4" placeholder="Viết vài dòng giới thiệu về kinh nghiệm và tâm huyết của bà...">@Model.NhanVien.GioiThieu</textarea>
+                                </div>
+                            </div>
+
+                            @* CỘT 2: THÔNG TIN CHUYÊN MÔN *@
+                            <div class="col-md-6 ps-md-4">
+                                <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">Thông tin chuyên môn</h6>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Chuyên khoa chính</label>
+                                    <input name="ChuyenKhoaChinh" value="@Model?.ChuyenKhoaChinh" class="form-control rounded-pill" placeholder="Ví dụ: Răng Hàm Mặt, Chỉnh nha..." />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Số năm kinh nghiệm</label>
+                                    <div class="input-group">
+                                        <input name="SoNamKinhNghiem" value="@(Model?.SoNamKinhNghiem ?? 0)" class="form-control rounded-start-pill" type="number" />
+                                        <span class="input-group-text rounded-end-pill">năm</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Số chứng chỉ hành nghề</label>
+                                    <input asp-for="SoChungChi" class="form-control rounded-pill bg-light" readonly />
+                                    <small class="text-muted fst-italic">Chứng chỉ đã được xác thực bởi hệ thống.</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Mô tả chi tiết kỹ năng</label>
+                                    <textarea asp-for="MoTaChuyenMon" class="form-control rounded-3" rows="4" placeholder="Các kỹ thuật chuyên sâu bà đang đảm nhận..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4 border-top pt-4">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow">
+                                <i class="fas fa-save me-2"></i>CẬP NHẬT HỒ SƠ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

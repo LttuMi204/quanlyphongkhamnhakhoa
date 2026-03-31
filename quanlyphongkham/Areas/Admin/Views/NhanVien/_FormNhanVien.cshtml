@@ -1,0 +1,171 @@
+﻿@model quanlyphongkham.Models.NhanVien
+
+@{
+    var isEdit = Model.MaNhanVien > 0;
+}
+
+<form asp-action="@(isEdit ? "EditPartial" : "CreatePartial")" asp-route-id="@Model.MaNhanVien" method="post" id="formNhanVien">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    @if (isEdit)
+    {
+        <input type="hidden" asp-for="MaNhanVien" />
+        <input type="hidden" name="id" value="@Model.MaNhanVien" />
+    }
+
+    <div class="row">
+        <div class="col-md-6 border-end">
+            <h6 class="text-primary border-bottom pb-2 mb-3"><i class="fas fa-user me-2"></i>Thông tin cá nhân</h6>
+            
+            <div class="mb-3">
+                <label asp-for="HoTen" class="form-label fw-bold">Họ tên <span class="text-danger">*</span></label>
+                <input asp-for="HoTen" class="form-control" required />
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="SoDienThoai" class="form-label">Số điện thoại</label>
+                    <input asp-for="SoDienThoai" class="form-control" required pattern="^0[0-9]{9}$" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="NgaySinh" class="form-label">Ngày sinh</label>
+                    <input asp-for="NgaySinh" class="form-control" type="date" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="GioiTinh" class="form-label">Giới tính</label>
+                    <select asp-for="GioiTinh" class="form-select">
+                        <option value="">Chọn</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" type="email" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
+                <textarea asp-for="DiaChi" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h6 class="text-info border-bottom pb-2 mb-3"><i class="fas fa-briefcase me-2"></i>Công việc & Tài khoản</h6>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="MaLoaiNV" class="form-label fw-bold">Chức vụ <span class="text-danger">*</span></label>
+                    <select asp-for="MaLoaiNV" class="form-select" id="selectChucVu" required>
+                        <option value="">Chọn chức vụ</option>
+                        @foreach (var loai in ViewBag.LoaiNhanVien)
+                        {
+                            <option value="@loai.MaLoaiNV">@loai.TenLoaiNV</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                    <select asp-for="TrangThai" class="form-select">
+                        <option value="Đang làm việc">Đang làm việc</option>
+                        <option value="Đã nghỉ việc">Đã nghỉ việc</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="blockBacSi" class="p-2 mb-3 bg-light rounded border" style="display:none;">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label asp-for="ChuyenKhoa" class="form-label text-primary">Chuyên khoa chính</label>
+                        <input asp-for="ChuyenKhoa" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label asp-for="SoNamKinhNghiem" class="form-label text-primary">Năm kinh nghiệm</label>
+                        <input asp-for="SoNamKinhNghiem" type="number" class="form-control form-control-sm" min="0" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TenDangNhap" class="form-label fw-bold">Tên đăng nhập hệ thống <span class="text-danger">*</span></label>
+                @if (isEdit)
+                {
+                    <input asp-for="TenDangNhap" class="form-control" required readonly="readonly" />
+                }
+                else
+                {
+                    <input asp-for="TenDangNhap" class="form-control" required />
+                }
+                <span asp-validation-for="TenDangNhap" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MatKhau" class="form-label">
+                    Mật khẩu 
+                </label>
+                <input asp-for="MatKhau" class="form-control" type="password" />
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu thông tin</button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        // Hàm kiểm tra chức vụ để hiện form Bác sĩ (Giả sử Mã Bác Sĩ = 2)
+        function toggleBacSi() {
+            var chucVu = $('#selectChucVu').val();
+            // Nếu bạn cấu hình Bác Sĩ là mã khác trong CSDL, hãy đổi số 2 thành mã tương ứng
+            if (chucVu == '2') {
+                $('#blockBacSi').slideDown();
+            } else {
+                $('#blockBacSi').slideUp();
+            }
+        }
+
+        // Chạy ngay khi mở form để check lúc Edit
+        toggleBacSi();
+
+        // Lắng nghe sự kiện đổi chức vụ
+        $('#selectChucVu').change(function () {
+            toggleBacSi();
+        });
+
+        // Xử lý Submit Form bằng AJAX
+        $('#formNhanVien').submit(function (e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function (result) {
+                    if (result.success) {
+                        $('#mainHrModal').modal('hide');
+                        toastr.success(result.message);
+                        
+                        // Load lại danh sách ở bảng hiện tại
+                        loadTabNhanSu();
+                        // Trùng tu lại bảng Account nếu đã mở
+                        if ($('#taiKhoanContainer').find('table').length > 0) loadTabTaiKhoan(); 
+                    } else {
+                        $('#mainHrModalBody').html(result);
+                    }
+                },
+                error: function () {
+                    toastr.error('Có lỗi hệ thống xảy ra.');
+                }
+            });
+        });
+    });
+</script>

@@ -1,0 +1,88 @@
+﻿@model IEnumerable<quanlyphongkham.Models.YeuCauDatLich>
+@{
+    ViewData["Title"] = "Quản lý yêu cầu đặt lịch";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+
+}
+
+<div class="container-fluid py-3">
+    <div class="row g-4">
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold" style="color: #72a1ff;"><i class="fas fa-paper-plane me-2"></i>Yêu cầu khách vãng lai</h6>
+                    <span class="badge rounded-pill bg-light text-primary border" style="border-color: #72a1ff !important; color: #72a1ff !important;">
+                        @Model.Count(x => x.TrangThai == "Chờ xử lý") Mới
+                    </span>
+                </div>
+                <div class="card-body p-0 overflow-auto" style="max-height: 75vh;">
+                    <div class="list-group list-group-flush" id="requestList">
+                        @if (!Model.Any())
+                        {
+                            <div class="text-center py-5 text-muted small">Không có yêu cầu nào</div>
+                        }
+                        @foreach (var item in Model)
+                        {
+                            <a href="javascript:void(0)" onclick="loadRequestDetail(@item.Id)"
+                               class="list-group-item list-group-item-action p-3 request-item" id="req-@item.Id">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="text-dark">@item.HoTen</strong>
+                                    <small class="text-muted">@item.NgayTao.ToString("dd/MM")</small>
+                                </div>
+                                <div class="small text-muted">SĐT: @item.SoDienThoai</div>
+                                <span class="badge @(item.TrangThai == "Chờ xử lý" ? "bg-warning text-dark" : "bg-success") rounded-pill mt-1">
+                                    @item.TrangThai
+                                </span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div id="requestDetailPanel" class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px; min-height: 500px;">
+                <div class="card-body d-flex align-items-center justify-content-center text-muted">
+                    <div class="text-center">
+                        <i class="fas fa-mouse-pointer fa-3x mb-3 opacity-25" style="color: #72a1ff;"></i>
+                        <p>Chọn một yêu cầu bên trái để xem chi tiết và xử lý</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadRequestDetail(id) {
+            // Hiệu ứng Active màu xanh dương nhạt
+            $(".request-item").removeClass("active-request shadow-sm");
+            $("#req-" + id).addClass("active-request shadow-sm");
+
+            $("#requestDetailPanel").html('<div class="text-center py-5"><div class="spinner-border" style="color: #72a1ff;"></div></div>');
+
+            $.get('@Url.Action("DetailsPartial", "YeuCauDatLich")', { id: id }, function (data) {
+                $("#requestDetailPanel").html(data);
+            });
+        }
+
+        function huyYeuCau(id) {
+            if (confirm("Xác nhận hủy yêu cầu đặt lịch này?")) {
+                $.post('@Url.Action("Huy", "YeuCauDatLich")', { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() })
+                    .done(function (res) {
+                        if (res.success) {
+                            toastr.success(res.message);
+                            location.reload();
+                        }
+                    });
+            }
+        }
+    </script>
+    <style>
+        .active-request {
+            background-color: #f0f7ff !important;
+            border-left: 5px solid #72a1ff !important;
+        }
+    </style>
+}

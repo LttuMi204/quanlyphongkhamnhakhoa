@@ -1,0 +1,100 @@
+﻿@model quanlyphongkham.Models.HoSoBenhAn
+
+<div class="card border-0 shadow-none">
+    <div class="row mb-3">
+        <div class="col-sm-6">
+            <p class="mb-1 small text-muted">Mã hồ sơ khám:</p>
+            <h6 class="fw-bold">#@Model.MaHoSo</h6>
+        </div>
+        <div class="col-sm-6 text-sm-end">
+            <p class="mb-1 small text-muted">Thời gian khám:</p>
+            <h6 class="fw-bold text-primary">@Model.NgayKham.ToString("dd/MM/yyyy - HH:mm")</h6>
+        </div>
+    </div>
+
+    <div class="p-3 bg-light rounded border mb-3">
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <span class="text-muted small d-block">Bác sĩ phụ trách:</span>
+                <strong><i class="fas fa-user-md text-info me-1"></i> @(Model.BacSi?.NhanVien?.HoTen ?? "N/A")</strong>
+            </div>
+            <div class="col-md-6 mb-2">
+                <span class="text-muted small d-block">Hẹn tái khám:</span>
+                <strong><i class="fas fa-calendar-check text-warning me-1"></i> @(Model.HenTaiKham?.ToString("dd/MM/yyyy") ?? "Không có lịch hẹn")</strong>
+            </div>
+        </div>
+    </div>
+
+    <h6 class="text-primary mt-3"><i class="fas fa-stethoscope me-1"></i> Khám & Điều trị</h6>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <th width="30%" class="bg-light text-muted">Triệu chứng:</th>
+                <td>@(string.IsNullOrEmpty(Model.TrieuChung) ? "-" : Model.TrieuChung)</td>
+            </tr>
+            <tr>
+                <th class="bg-light text-muted">Chẩn đoán:</th>
+                <td class="text-danger fw-bold">@(string.IsNullOrEmpty(Model.ChanDoan) ? "-" : Model.ChanDoan)</td>
+            </tr>
+            <tr>
+                <th class="bg-light text-muted">Phương pháp:</th>
+                <td>@(string.IsNullOrEmpty(Model.PhuongPhapDieuTri) ? "-" : Model.PhuongPhapDieuTri)</td>
+            </tr>
+            <tr>
+                <th class="bg-light text-muted">Đơn thuốc:</th>
+                <td>@(string.IsNullOrEmpty(Model.DonThuoc) ? "-" : Model.DonThuoc)</td>
+            </tr>
+            <tr>
+                <th class="bg-light text-muted">Lời dặn BS:</th>
+                <td class="text-info fst-italic">@(string.IsNullOrEmpty(Model.LoiDan) ? "-" : Model.LoiDan)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    @if (Model.ChiTietHoSos != null && Model.ChiTietHoSos.Any())
+    {
+        <h6 class="text-primary mt-3"><i class="fas fa-list-ul me-1"></i> Dịch vụ đã sử dụng</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped border">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tên dịch vụ</th>
+                        <th class="text-center">SL</th>
+                        <th class="text-end">Đơn giá</th>
+                        <th class="text-end">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ct in Model.ChiTietHoSos)
+                    {
+                        <tr>
+                            <td>@ct.DichVu?.TenDichVu</td>
+                            <td class="text-center">@ct.SoLuong</td>
+                            <td class="text-end">@(ct.DonGia?.ToString("N0"))</td>
+                            <td class="text-end fw-bold">@(ct.ThanhTien?.ToString("N0"))đ</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td colspan="3" class="text-end text-muted"><strong>Tổng cộng:</strong></td>
+                        <td class="text-end text-danger fw-bold fs-6">@Model.TongTien.ToString("N0")đ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (Model.HinhAnhXQuangs != null && Model.HinhAnhXQuangs.Any())
+    {
+        <h6 class="text-primary mt-3"><i class="fas fa-x-ray me-1"></i> Cận lâm sàng (X-Quang)</h6>
+        <div class="row g-2">
+            @foreach (var img in Model.HinhAnhXQuangs)
+            {
+                <div class="col-4">
+                    <a href="@img.DuongDan" target="_blank" title="Mở ảnh gốc">
+                        <img src="@img.DuongDan" alt="@img.TenFile" class="img-fluid rounded border p-1" style="height: 100px; width:100%; object-fit: cover;" />
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>

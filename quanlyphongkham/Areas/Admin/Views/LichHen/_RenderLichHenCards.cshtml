@@ -1,0 +1,62 @@
+﻿@model List<quanlyphongkham.Models.LichHen>
+
+@if (Model != null && Model.Any())
+{
+    <div style="height: 220px; overflow-y: auto; padding-right: 4px;" class="custom-scrollbar">
+        @foreach (var lh in Model)
+        {
+            bool isKham = lh.TrangThai == "Đã khám";
+            bool isHuy = lh.TrangThai == "Hủy";
+
+            string bgCardClass = isKham ? "bg-light" : isHuy ? "bg-light opacity-50" : "bg-white shadow-sm";
+            string textClass = isKham || isHuy ? "text-muted" : "text-dark";
+
+            <div class="card mb-2 p-2 border-0 rounded-3 appointment-card @bgCardClass"
+                 onclick="editLichHen(@lh.MaLichHen)" title="Nhấn để xem chi tiết / Cập nhật">
+
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <div class="fw-bold small @textClass text-truncate" style="max-width: 75%;">
+                        @lh.BenhNhan?.HoTen
+                    </div>
+                    <div class="small fw-bold @textClass" style="font-size: 0.75rem;">
+                        @lh.GioHen.ToString("hh\\:mm")
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-1">
+                    @if (lh.BacSi != null)
+                    {
+                        <div class="small text-truncate @(isKham || isHuy ? "text-muted" : "text-primary fw-bold")" style="max-width: 55%; font-size: 0.75rem;">
+                            BS. @lh.BacSi.NhanVien?.HoTen.Split(' ').Last()
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="small text-danger fst-italic text-truncate" style="max-width: 55%; font-size: 0.75rem;">
+                            Chưa xếp BS
+                        </div>
+                    }
+
+                    @if (isKham)
+                    {
+                        <span class="badge bg-secondary rounded-1" style="font-size: 0.65rem;">Đã khám</span>
+                    }
+                    else if (isHuy)
+                    {
+                        <span class="badge bg-danger rounded-1" style="font-size: 0.65rem;">Đã hủy</span>
+                    }
+                    else if (lh.TrangThai == "Chờ xác nhận")
+                    {
+                        <span class="badge bg-warning text-dark rounded-1" style="font-size: 0.65rem;">Chờ duyệt</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="d-flex h-100 align-items-center justify-content-center opacity-25">
+        <i class="fas fa-calendar-plus fs-4 text-muted"></i>
+    </div>
+}

@@ -1,0 +1,62 @@
+﻿@model IEnumerable<quanlyphongkham.Models.DichVuWebViewModel>
+@{
+    ViewData["Title"] = "Dịch vụ";
+}
+
+<style>
+    /* Thêm một chút hiệu ứng khi hover chuột vào thẻ dịch vụ cho sinh động */
+    .service-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+        }
+
+    .service-img {
+        height: 220px;
+        object-fit: cover;
+    }
+</style>
+
+<section class="py-5 position-relative" style="background: linear-gradient(135deg, #f8f9fa 0%, #e0f7fa 100%); border-radius: 0 0 50px 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+    <div class="container text-center py-5">
+        <span class="badge bg-primary px-3 py-2 rounded-pill text-uppercase mb-3 shadow-sm">Dịch vụ nha khoa</span>
+        <h1 class="fw-bold text-dark mb-3">Chăm sóc răng miệng toàn diện</h1>
+        <p class="text-muted lead mx-auto" style="max-width: 700px;">
+            Phòng khám cung cấp đầy đủ các dịch vụ nha khoa từ cơ bản đến chuyên sâu với trang thiết bị hiện đại và đội ngũ bác sĩ nhiều kinh nghiệm.
+        </p>
+    </div>
+</section>
+
+<section class="py-5 mt-3">
+    <div class="container">
+        <div class="row g-4 align-items-stretch">
+            @foreach (var dv in Model)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="card service-card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                        
+                        <div class="card-body p-4 d-flex flex-column">
+                            <h5 class="fw-bold text-primary mb-3">@dv.TenDichVu</h5>
+
+                            <p class="text-muted flex-grow-1">
+                                @(string.IsNullOrEmpty(dv.MoTa) ? "Đang cập nhật thông tin dịch vụ." : dv.MoTa)
+                            </p>
+
+                            <hr class="text-muted opacity-25 my-3">
+
+                            <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3">
+                                <span class="text-muted fw-semibold small">
+                                    <i class="fa-solid fa-tag me-1 text-warning"></i> Chi phí:
+                                </span>
+                                <span class="fw-bold text-success fs-5 mb-0">@dv.GiaHienTai.ToString("N0") đ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

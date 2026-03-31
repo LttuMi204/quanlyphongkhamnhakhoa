@@ -1,0 +1,104 @@
+﻿@{
+    Layout = null; // Không dùng Layout chung để trang login gọn gàng
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập hệ thống - Quản lý phòng khám</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            width: 400px;
+        }
+
+        .login-header {
+            background-color: #ffffff;
+            padding: 30px;
+            text-align: center;
+        }
+
+            .login-header h3 {
+                color: #4e73df;
+                font-weight: 700;
+                margin-bottom: 0;
+            }
+
+        .login-body {
+            background-color: #ffffff;
+            padding: 0 40px 40px 40px;
+        }
+
+        .btn-login {
+            background: #4e73df;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+            .btn-login:hover {
+                background: #2e59d9;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-tooth fa-3x text-primary mb-3"></i>
+            <h3>ĐĂNG NHẬP NHA KHOA</h3>
+            <p class="text-muted small">Hệ thống quản lý nội bộ</p>
+        </div>
+        <div class="login-body">
+            <form asp-action="Login" asp-controller="Account" method="post">
+                @Html.AntiForgeryToken()
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger p-2 small text-center">
+                        <i class="fas fa-exclamation-circle me-1"></i> @ViewBag.Error
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Tên đăng nhập</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-user text-muted"></i></span>
+                        <input type="text" name="TenDangNhap" class="form-control bg-light border-start-0" placeholder="Nhập tài khoản..." required autofocus />
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-muted small fw-bold">Mật khẩu</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock text-muted"></i></span>
+                        <input type="password" name="MatKhau" class="form-control bg-light border-start-0" placeholder="********" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-login">
+                    ĐĂNG NHẬP <i class="fas fa-sign-in-alt ms-2"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

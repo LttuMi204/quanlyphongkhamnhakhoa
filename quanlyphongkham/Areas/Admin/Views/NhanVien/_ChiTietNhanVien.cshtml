@@ -1,0 +1,87 @@
+﻿@model quanlyphongkham.Models.NhanVien
+
+<div class="row">
+    <div class="col-md-6 border-end">
+        <h6 class="text-primary border-bottom pb-2 mb-3"><i class="fas fa-user me-2"></i>Thông tin cá nhân</h6>
+        <table class="table table-borderless table-sm">
+            <tr><th width="130">Mã nhân viên:</th><td>@Model.MaNhanVien</td></tr>
+            <tr><th>Họ tên:</th><td class="text-primary fw-bold">@Model.HoTen</td></tr>
+            <tr><th>Giới tính:</th><td>@(Model.GioiTinh ?? "Chưa cập nhật")</td></tr>
+            <tr><th>Ngày sinh:</th><td>@(Model.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</td></tr>
+            <tr><th>Số điện thoại:</th><td>@Model.SoDienThoai</td></tr>
+            <tr><th>Email:</th><td>@(Model.Email ?? "Chưa cập nhật")</td></tr>
+            <tr><th>Địa chỉ:</th><td>@(Model.DiaChi ?? "Chưa cập nhật")</td></tr>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h6 class="text-info border-bottom pb-2 mb-3"><i class="fas fa-briefcase me-2"></i>Công việc & Tài khoản</h6>
+        <table class="table table-borderless table-sm">
+            <tr><th width="140">Chức vụ:</th><td><span class="badge bg-info text-dark">@(Model.LoaiNhanVien?.TenLoaiNV ?? "N/A")</span></td></tr>
+            <tr>
+                <th>Trạng thái:</th>
+                <td>
+                    @if (Model.IsDeleted)
+                    {
+                        <span class="badge bg-danger">Đã nghỉ việc</span>
+                        @if (Model.DeletedAt.HasValue)
+                        {
+                            <div class="small text-muted mt-1 fst-italic">(Nghỉ từ: @Model.DeletedAt.Value.ToString("dd/MM/yyyy"))</div>
+                        }
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">@Model.TrangThai</span>
+                    }
+                </td>
+            </tr>
+            <tr><th>Ngày bắt đầu:</th><td>@(Model.ThoiGianBatDauLam?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</td></tr>
+
+            <tr><td colspan="2"><hr class="my-1" /></td></tr>
+            <tr>
+                <th>Tài khoản:</th>
+                <td>
+                    @if (Model.TaiKhoanNhanVien != null)
+                    {
+                        <span class="fw-bold @(Model.TaiKhoanNhanVien.TrangThai == "Bị khóa" ? "text-danger" : "text-success")">
+                            @Model.TaiKhoanNhanVien.TenDangNhap
+                        </span>
+                        <span class="badge @(Model.TaiKhoanNhanVien.TrangThai == "Bị khóa" ? "bg-danger" : "bg-secondary") ms-1">
+                            @Model.TaiKhoanNhanVien.TrangThai
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa cấp tài khoản</span>
+                    }
+                </td>
+            </tr>
+
+            @if (Model.BacSi != null)
+            {
+                <tr><td colspan="2"><hr class="my-1" /></td></tr>
+                <tr><th>Chuyên khoa:</th><td class="text-primary fw-bold">@Model.BacSi.ChuyenKhoaChinh</td></tr>
+                <tr><th>Kinh nghiệm:</th><td>@Model.BacSi.SoNamKinhNghiem năm</td></tr>
+                <tr><th>Số chứng chỉ:</th><td>@(string.IsNullOrEmpty(Model.BacSi.SoChungChi) ? "Chưa cập nhật" : Model.BacSi.SoChungChi)</td></tr>
+            }
+        </table>
+    </div>
+</div>
+
+<div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+    @if (!Model.IsDeleted)
+    {
+        <button type="button" class="btn btn-warning" onclick="openEditNhanVien(@Model.MaNhanVien)">
+            <i class="fas fa-edit me-1"></i>Sửa thông tin
+        </button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-success" onclick="restoreNhanVien(@Model.MaNhanVien); $('#mainHrModal').modal('hide');">
+            <i class="fas fa-trash-restore me-1"></i>Khôi phục làm việc
+        </button>
+    }
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="fas fa-times me-1"></i>Đóng
+    </button>
+</div>

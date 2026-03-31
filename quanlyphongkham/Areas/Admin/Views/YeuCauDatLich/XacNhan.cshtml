@@ -1,0 +1,72 @@
+﻿@model quanlyphongkham.Models.YeuCauDatLich
+@{
+    ViewData["Title"] = "Xác nhận yêu cầu đặt lịch";
+}
+
+<div class="container-fluid py-3">
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Tạo lịch hẹn từ yêu cầu</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="XacNhan" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Thông tin khách hàng</label>
+                            <div class="bg-light p-3 rounded">
+                                <p><strong>Họ tên:</strong> @Model.HoTen</p>
+                                <p><strong>Số điện thoại:</strong> @Model.SoDienThoai</p>
+                                <p><strong>Địa chỉ:</strong> @Model.DiaChi</p>
+                                @* <p><strong>Ngày muốn khám:</strong> @Model.NgayMuonKham.ToString("dd/MM/yyyy")</p> *@
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Chọn bác sĩ</label>
+                                <select name="maBacSi" class="form-select" required>
+                                    <option value="">Chọn</option>
+                                    @foreach (var bs in ViewBag.DanhSachBacSi)
+                                    {
+                                        <option value="@bs.Value">@bs.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Chọn dịch vụ</label>
+                                <select name="maDichVu" class="form-select" required>
+                                    <option value="">Chọn</option>
+                                    @foreach (var dv in ViewBag.DanhSachDichVu)
+                                    {
+                                        <option value="@dv.Value">@dv.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Chọn ghế (nếu có)</label>
+                                <select name="maGhe" class="form-select">
+                                    <option value="">Không chọn</option>
+                                    @foreach (var ghe in ViewBag.DanhSachGhe)
+                                    {
+                                        <option value="@ghe.Value">@ghe.Text</option>
+                                    }
+                                </select>
+                            </div>
+                           @*  <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Ngày hẹn</label>
+                                <input type="date" name="ngayHen" class="form-control" value="@Model.NgayMuonKham.ToString("yyyy-MM-dd")" required />
+                            </div> *@
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Giờ hẹn</label>
+                                <input type="time" name="gioHen" class="form-control" required />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">Xác nhận và tạo lịch hẹn</button>
+                        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

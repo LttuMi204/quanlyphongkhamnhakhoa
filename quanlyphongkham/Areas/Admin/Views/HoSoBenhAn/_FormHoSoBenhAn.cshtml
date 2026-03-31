@@ -1,0 +1,142 @@
+﻿@model quanlyphongkham.Models.HoSoBenhAn
+
+@{
+    var isEdit = ViewContext.RouteData.Values["action"].ToString() == "Edit";
+}
+
+<form asp-action="@(isEdit ? "Edit" : "Create")" method="post" id="formHoSoBenhAn">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    @if (isEdit)
+    {
+        <input type="hidden" asp-for="MaHoSo" />
+    }
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="MaBenhNhan" class="form-label">Bệnh nhân</label>
+            <select asp-for="MaBenhNhan" class="form-select" asp-items="ViewBag.DanhSachBenhNhan">
+                <option value="">Chọn bệnh nhân</option>
+            </select>
+            <span asp-validation-for="MaBenhNhan" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="MaBacSi" class="form-label">Bác sĩ</label>
+            <select asp-for="MaBacSi" class="form-select" asp-items="ViewBag.DanhSachBacSi">
+                <option value="">Chọn bác sĩ</option>
+            </select>
+            <span asp-validation-for="MaBacSi" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="MaLichHen" class="form-label">Lịch hẹn (nếu có)</label>
+            <select asp-for="MaLichHen" class="form-select" asp-items="ViewBag.DanhSachLichHen">
+                <option value="">Không chọn</option>
+            </select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="MaGhe" class="form-label">Ghế nha khoa</label>
+            <select asp-for="MaGhe" class="form-select" asp-items="ViewBag.DanhSachGhe">
+                <option value="">Chọn ghế</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="NgayKham" class="form-label">Ngày khám</label>
+            <input asp-for="NgayKham" class="form-control" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+            <span asp-validation-for="NgayKham" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="HenTaiKham" class="form-label">Hẹn tái khám</label>
+            <input asp-for="HenTaiKham" class="form-control" type="date" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="TrieuChung" class="form-label">Triệu chứng</label>
+        <textarea asp-for="TrieuChung" class="form-control" rows="2"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ChanDoan" class="form-label">Chẩn đoán</label>
+        <textarea asp-for="ChanDoan" class="form-control" rows="2"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PhuongPhapDieuTri" class="form-label">Phương pháp điều trị</label>
+        <textarea asp-for="PhuongPhapDieuTri" class="form-control" rows="2"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DonThuoc" class="form-label">Đơn thuốc</label>
+        <textarea asp-for="DonThuoc" class="form-control" rows="2"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="LoiDan" class="form-label">Lời dặn</label>
+        <textarea asp-for="LoiDan" class="form-control" rows="2"></textarea>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="TongTien" class="form-label">Tổng tiền</label>
+            <input asp-for="TongTien" class="form-control" type="number" step="0" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="DaThanhToan" class="form-label">Đã thanh toán?</label>
+            <select asp-for="DaThanhToan" class="form-select">
+                <option value="false">Chưa</option>
+                <option value="true">Đã thanh toán</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Đóng
+        </button>
+    </div>
+</form>
+<script>
+    $('#formHoSoBenhAn').submit(function (e) {
+        e.preventDefault();
+        var form = $(this);
+        $.ajax({
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: form.serialize(),
+            success: function (result) {
+                if (result.success) {
+                    toastr.success(result.message);
+                    // Reset form hoặc chuyển tab
+                    form[0].reset();
+                    // Có thể load lại danh sách hồ sơ nếu cần
+                } else {
+                    // Có lỗi validation, cập nhật lại form với các lỗi
+                    $('#taoHoSoContainer').html(result);
+                }
+            },
+            error: function (xhr) {
+                toastr.error('Có lỗi xảy ra: ' + xhr.responseText);
+            }
+        });
+    });
+    success: function (result) {
+        if (result.success) {
+            toastr.success(result.message);
+            // Reset form
+            $('#formHoSoBenhAn')[0].reset();
+            // Hoặc chuyển sang tab danh sách hồ sơ?
+            // Ví dụ: chuyển sang tab 2 và load lại danh sách hồ sơ của bệnh nhân vừa tạo?
+            // Bạn có thể thêm logic tùy ý
+        } else {
+            $('#taoHoSoContainer').html(result);
+        }
+    },
+</script>

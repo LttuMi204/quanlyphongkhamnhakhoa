@@ -1,0 +1,39 @@
+﻿<div class="container mt-4">
+    <h2>Lịch khám của tôi</h2>
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-auto">
+            <input type="text" name="searchName" class="form-control" placeholder="Tìm tên bệnh nhân...">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+        </div>
+    </form>
+
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Ngày/Giờ</th>
+                <th>Bệnh nhân</th>
+                <th>SĐT</th>
+                <th>Lý do</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.NgayHen.ToString("dd/MM/yyyy") @item.GioHen</td>
+                    <td>@item.BenhNhan?.HoTen</td>
+                    <td>@item.BenhNhan?.SoDienThoai</td>
+                    <td>@item.LyDoKham</td>
+                    <td><span class="badge bg-info">@item.TrangThai</span></td>
+                    <td>
+                        <a href="/Admin/HoSoBenhAn/Create?maLichHen=@item.MaLichHen" class="btn btn-sm btn-success">Khám bệnh</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

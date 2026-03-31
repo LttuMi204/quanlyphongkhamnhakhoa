@@ -1,0 +1,124 @@
+﻿/* --- GIAO DIỆN XANH NHẠT NHẸ NHÀNG --- */
+:root {
+    --soft-blue: #f0f7ff; /* Màu nền xanh nhạt cực nhẹ */
+    --border-soft: #d1e3ff;
+    --primary-blue: #4e73df;
+}
+
+.stat-card-standard {
+    background-color: var(--soft-blue);
+    border: 1px solid var(--border-soft);
+    border-left: 5px solid var(--primary-blue) !important;
+    border-radius: 12px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+/* Thống nhất chiều cao cho hàng tiện ích và yêu cầu */
+.fixed-height-box {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #2e59d9;
+}
+
+.stat-lbl {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #5a5c69;
+}
+
+.stat-icon-right {
+    color: var(--primary-blue);
+    opacity: 0.15;
+    font-size: 1.8rem;
+}/* --- THIẾT KẾ THẺ THỐNG KÊ CHUẨN --- */
+.stat-card-main {
+    background-color: #f0f7ff; /* Xanh dương nhạt */
+    border: 1px solid #d1e3ff;
+    border-left: 5px solid var(--primary) !important;
+    border-radius: 12px;
+    height: 100px; /* Cố định chiều cao để tất cả bằng nhau */
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
+}
+
+    .stat-card-main:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(78, 115, 223, 0.15);
+    }
+
+.stat-number-main {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #2e59d9; /* Xanh đậm cho con số */
+    line-height: 1;
+}
+
+.stat-label-main {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #5a5c69;
+    margin-bottom: 4px;
+}
+
+.stat-icon-main {
+    color: #4e73df;
+    opacity: 0.2; /* Biểu tượng mờ bên phải */
+    font-size: 1.8rem;
+}
+
+/* Đồng bộ padding cho các khối Tiện ích và Yêu cầu */
+.sync-card-body {
+    padding: 1.5rem !important;
+    height: 100%;
+}
+/* --- THU GỌN FORM TRONG MODAL --- */
+/* Giảm khoảng cách các hàng */
+.modal-body .mb-3,
+.modal-body .mb-2 {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Thu nhỏ Label */
+.modal-body .form-label {
+    margin-bottom: 0.2rem !important;
+    font-size: 0.85rem !important;
+}
+
+/* Ép kích thước ô Input / Select */
+.modal-body .form-control,
+.modal-body .form-select {
+    padding: 0.3rem 0.6rem !important;
+    font-size: 0.85rem !important;
+    min-height: 32px !important;
+}
+
+/* Giảm khoảng cách padding của các cột (col-md-6) để form hẹp lại */
+.modal-body .row {
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+}
+
+    .modal-body .row > [class*="col-"] {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+/* Gọt lại các thẻ tiêu đề (h6) */
+.modal-body h6.border-bottom {
+    padding-bottom: 0.3rem !important;
+    margin-bottom: 0.6rem !important;
+    font-size: 0.95rem !important;
+}

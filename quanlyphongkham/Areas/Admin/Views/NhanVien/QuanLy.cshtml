@@ -1,0 +1,201 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Nhân sự & Hệ thống";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800 fw-bold">
+            <i class="fas fa-user-md me-2 text-primary"></i>@ViewData["Title"]
+        </h1>
+        <button class="btn btn-primary shadow-sm btn-add-main" onclick="openCreateNhanVien()">
+            <i class="fas fa-id-badge me-1"></i> Thêm nhân viên mới
+        </button>
+    </div>
+
+    <ul class="nav nav-tabs border-bottom-0" id="hrTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#lich-lam-viec" type="button" onclick="loadTabLichLamViec()">
+                <i class="fas fa-calendar-alt me-2"></i>Lịch làm việc
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#nhan-su" type="button" onclick="loadTabNhanSu()">
+                <i class="fas fa-id-card me-2"></i>Danh sách nhân sự
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#tai-khoan" type="button" onclick="loadTabTaiKhoan()">
+                <i class="fas fa-user-lock me-2"></i>Tài khoản đăng nhập
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content card shadow-sm border-top-0 p-4" id="hrTabContent">
+
+        <div class="tab-pane fade show active" id="lich-lam-viec" role="tabpanel">
+            <div id="lichLamViecContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="nhan-su" role="tabpanel">
+            <div class="d-flex justify-content-end mb-2">
+                <button id="btnToggleDeleted" class="btn btn-sm btn-outline-secondary shadow-sm" onclick="toggleDeletedNhanSu()">
+                    <i class="fas fa-history me-1"></i> Xem nhân sự đã nghỉ
+                </button>
+            </div>
+
+            <div id="nhanSuContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tai-khoan" role="tabpanel">
+            <div id="taiKhoanContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mainHrModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="mainHrModalLabel">Cập nhật</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="mainHrModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Biến lưu trạng thái hiện tại (false: Đang làm | true: Đã nghỉ)
+        let isViewingDeleted = false;
+
+        // Khi load trang, mở Tab Lịch làm việc mặc định
+        $(document).ready(() => loadTabLichLamViec());
+
+        // Hàm chuyển đổi Nút & Dữ liệu
+        function toggleDeletedNhanSu() {
+            isViewingDeleted = !isViewingDeleted; // Đảo ngược trạng thái
+
+            if (isViewingDeleted) {
+                $('#btnToggleDeleted')
+                    .html('<i class="fas fa-user-check me-1"></i> Quay lại danh sách đang làm')
+                    .removeClass('btn-outline-secondary')
+                    .addClass('btn-outline-primary');
+            } else {
+                $('#btnToggleDeleted')
+                    .html('<i class="fas fa-history me-1"></i> Xem nhân sự đã nghỉ')
+                    .removeClass('btn-outline-primary')
+                    .addClass('btn-outline-secondary');
+            }
+
+            loadTabNhanSu(1); // Load lại bảng nhân sự
+        }
+
+        // Hàm Load danh sách nhân sự (được nhúng biến isViewingDeleted)
+        function loadTabNhanSu(page = 1) {
+            var search = $('#searchNV').val() || '';
+            var maLoaiNV = $('#filterChucVu').val() || '';
+            $.get('@Url.Action("NhanVienPartial", "NhanVien", new { area = "Admin" })',
+                { search: search, maLoaiNV: maLoaiNV, page: page, isDeleted: isViewingDeleted },
+                function (data) {
+                    $('#nhanSuContainer').html(data);
+                });
+        }
+
+        function loadTabLichLamViec() {
+            var maLoai = $('#filterMaLoaiNVLich').val() || '';
+            var searchName = $('#searchNameLich').val() || '';
+            var caLam = $('#filterCaLamLich').val() || '';
+            var xemThu = $('#filterXemThuLich').val() || '';
+            $.get('@Url.Action("DanhSachPartial", "LichLamViec", new { area = "Admin" })', { maLoaiNV: maLoai, searchName: searchName, caLam: caLam, xemThu: xemThu }, function (data) {
+                $('#lichLamViecContainer').html(data);
+            });
+        }
+
+        function loadTabTaiKhoan(page = 1) {
+            var search = $('#searchTkNhanVien').val() || '';
+            $.get('@Url.Action("IndexPartial", "TaiKhoanNhanVien", new { area = "Admin" })', { search: search, page: page }, function (data) {
+                $('#taiKhoanContainer').html(data);
+            });
+        }
+
+        function openCreateNhanVien() {
+            $.get('@Url.Action("CreatePartial", "NhanVien", new { area = "Admin" })', function (data) {
+                $('#mainHrModalLabel').html('<i class="fas fa-user-plus me-2"></i>Thêm nhân viên mới');
+                $('#mainHrModalBody').html(data);
+                $('#mainHrModal').modal("show");
+            });
+        }
+
+        function openEditNhanVien(id) {
+            $.get('@Url.Action("EditPartial", "NhanVien", new { area = "Admin" })', { id: id }, function (data) {
+                $('#mainHrModalLabel').html('<i class="fas fa-user-edit me-2"></i>Sửa thông tin nhân sự');
+                $('#mainHrModalBody').html(data);
+                $('#mainHrModal').modal("show");
+            });
+        }
+
+        function viewNhanVien(id) {
+            $.get('@Url.Action("DetailsPartial", "NhanVien", new { area = "Admin" })', { id: id }, function (data) {
+                $('#mainHrModalLabel').html('<i class="fas fa-id-card me-2"></i>Chi tiết nhân viên');
+                $('#mainHrModalBody').html(data);
+                $('#mainHrModal').modal("show");
+            });
+        }
+
+        // Xóa Mềm
+        function deleteNhanVien(id) {
+            if (!confirm("Nhân viên này sẽ được chuyển sang trạng thái 'Đã nghỉ việc' và tài khoản sẽ bị khóa. Bạn chắc chắn chứ?")) return;
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.post('@Url.Action("Delete", "NhanVien", new { area = "Admin" })',
+                { id: id, __RequestVerificationToken: token },
+                function (result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                        loadTabNhanSu(); // Load lại luôn bảng nhân sự hiện tại
+                    } else {
+                        toastr.error(result.message);
+                    }
+                });
+        }
+
+        // Khôi phục
+        function restoreNhanVien(id) {
+            if (!confirm("Nhân viên này sẽ được khôi phục trạng thái 'Đang làm việc' và tài khoản sẽ mở khóa. Bạn chắc chắn chứ?")) return;
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.post('@Url.Action("Restore", "NhanVien", new { area = "Admin" })',
+                { id: id, __RequestVerificationToken: token },
+                function (result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                        loadTabNhanSu(); // Hàm loadTabNhanSu tự biết giữ nguyên biến isViewingDeleted = true
+                    } else {
+                        toastr.error(result.message);
+                    }
+                });
+        }
+
+        // Delay live search để gõ phím xong mới tìm
+        var searchTimeout;
+        function debounceSearchNhanVien() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function () { loadTabNhanSu(1); }, 500);
+        }
+
+        function searchNhanVien(e) {
+            e.preventDefault();
+            loadTabNhanSu(1);
+        }
+    </script>
+}

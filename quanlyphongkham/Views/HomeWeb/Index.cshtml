@@ -1,0 +1,283 @@
+﻿@model IEnumerable<quanlyphongkham.Models.DichVuWebViewModel>
+@{
+    ViewData["Title"] = "Trang chủ";
+    var doctors = ViewBag.Doctors as IEnumerable<quanlyphongkham.Models.NhanVien>;
+}
+
+<!-- Hero Section -->
+<section class="hero-section py-5 bg-light" style="border-radius: 0 0 50px 50px;">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h1 class="display-5 fw-bold text-dark mb-3">
+                    Chăm sóc nụ cười toàn diện <br />
+                    <span class="text-primary">Chuyên nghiệp & Tận tâm</span>
+                </h1>
+                <p class="lead text-secondary mb-4">
+                    Hệ thống nha khoa hiện đại với 5 ghế điều trị tiêu chuẩn. Hỗ trợ xem lại <strong>Hồ sơ X-Quang trực tuyến</strong> và <strong>Thanh toán trả góp linh hoạt</strong> theo từng đợt điều trị.
+                </p>
+                <div class="d-flex gap-3 mt-4">
+                    @if (Context.Session.GetInt32("UserId") != null)
+                    {
+                        <button type="button" class="btn btn-primary btn-lg rounded-pill shadow px-4" onclick="openDatLichModal()">
+                            <i class="fa-regular fa-calendar-check me-2"></i> Đặt lịch ngay
+                        </button>
+                    }
+                    else
+                    {
+                        <a asp-controller="PublicDatLich" asp-action="Create" class="btn btn-primary btn-lg rounded-pill shadow px-4">
+                            <i class="fa-regular fa-calendar-check me-2"></i> Đặt lịch ngay
+                        </a>
+                    }
+                </div>
+
+                <div class="modal fade" id="modalThanhVien" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg rounded-4" id="modalContentDatLich">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <!-- Thay ảnh hero bằng ảnh nha khoa hiện đại -->
+                <img src="@Url.Content("~/images/hinh1.jpg")"
+                     class="img-fluid rounded-4 shadow-lg"
+                     alt="Phòng khám nha khoa hiện đại" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Lý do chọn chúng tôi -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h6 class="text-primary">Lý do khách hàng tin chọn</h6>
+            <h2 class="fw-bold text-primary">NHA KHOA KIẾN DUY</h2>
+        </div>
+        <div class="row align-items-center">
+            <!-- LEFT -->
+            <div class="col-lg-4 text-lg-end">
+                <div class="why-item">
+                    <div class="reason-number">01</div>
+                    <h5>Bác sĩ giỏi tận tâm</h5>
+                    <p>Đội ngũ bác sĩ hơn 10 năm kinh nghiệm, luôn tận tâm trong điều trị.</p>
+                </div>
+                <div class="why-item">
+                    <div class="reason-number">02</div>
+                    <h5>Hệ thống nha khoa uy tín</h5>
+                    <p>Cơ sở vật chất hiện đại giúp khách hàng an tâm.</p>
+                </div>
+                <div class="why-item">
+                    <div class="reason-number">03</div>
+                    <h5>Công nghệ hiện đại</h5>
+                    <p>Máy móc tiên tiến hỗ trợ điều trị chính xác.</p>
+                </div>
+            </div>
+            <!-- CENTER -->
+            <div class="col-lg-4 text-center">
+                <div class="why-center-img">
+                    <!-- Thay ảnh trung tâm bằng ảnh bác sĩ và bệnh nhân vui vẻ -->
+                    <img src="@Url.Content("~/images/bs.png")"
+                         class="img-fluid rounded-4 shadow-lg"                         
+                         alt="Bác sĩ và bệnh nhân" />
+                </div>
+            </div>
+            <!-- RIGHT -->
+            <div class="col-lg-4">
+                <div class="why-item">
+                    <div class="reason-number">04</div>
+                    <h5>Cam kết minh bạch</h5>
+                    <p>Bảng giá rõ ràng, không phát sinh chi phí.</p>
+                </div>
+                <div class="why-item">
+                    <div class="reason-number">05</div>
+                    <h5>Hỗ trợ tài chính</h5>
+                    <p>Hỗ trợ trả góp linh hoạt.</p>
+                </div>
+                <div class="why-item">
+                    <div class="reason-number">06</div>
+                    <h5>Khách hàng tin chọn</h5>
+                    <p>Hàng nghìn khách hàng hài lòng với dịch vụ.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Công nghệ hiện đại -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">CÔNG NGHỆ HIỆN ĐẠI</h2>
+        </div>
+        <!-- TAB CONTENT -->
+        <div class="row g-4">
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card h-100 border-0 shadow-sm transition-hover">
+                    <div class="card-body p-4">
+                        <div class="text-primary mb-3">
+                            <i class="fas fa-laptop-medical fa-2x"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Máy iTero Element 5D</h5>
+                        <p class="card-text text-muted small mb-3">
+                            Máy quét kỹ thuật số hiện đại giúp quét toàn bộ khoang miệng trong vài phút, cho hình ảnh 3D chính xác đến 99%.
+                        </p>
+                        <ul class="text-muted small ps-3 mb-0">
+                            <li class="mb-1">Phát hiện sâu răng sớm bằng công nghệ NIRI.</li>
+                            <li class="mb-1">Mô phỏng kết quả niềng răng ngay trong lần khám đầu.</li>
+                            <li>Không cần lấy dấu hàm truyền thống.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card h-100 border-0 shadow-sm transition-hover">
+                    <div class="card-body p-4">
+                        <div class="text-info mb-3">
+                            <i class="fas fa-x-ray fa-2x"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Máy CT Cone Beam 3D</h5>
+                        <p class="card-text text-muted small mb-3">
+                            Máy chụp CT giúp bác sĩ quan sát cấu trúc xương hàm, răng và dây thần kinh một cách chính xác.
+                        </p>
+                        <ul class="text-muted small ps-3 mb-0">
+                            <li class="mb-1">Hình ảnh 3D sắc nét.</li>
+                            <li class="mb-1">Không xâm lấn, không đau.</li>
+                            <li>Hỗ trợ chẩn đoán chính xác trước khi điều trị.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card h-100 border-0 shadow-sm transition-hover">
+                    <div class="card-body p-4">
+                        <div class="text-success mb-3">
+                            <i class="fas fa-tooth fa-2x"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Máy Cạo Vôi Siêu Âm</h5>
+                        <p class="card-text text-muted small mb-3">
+                            Công nghệ sóng siêu âm giúp loại bỏ cao răng nhanh chóng, không gây đau và không chảy máu.
+                        </p>
+                        <ul class="text-muted small ps-3 mb-0">
+                            <li class="mb-1">Thời gian thực hiện nhanh (15-30 phút).</li>
+                            <li class="mb-1">Không tổn thương mô mềm.</li>
+                            <li>Phù hợp cho mọi đối tượng.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="card h-100 border-0 shadow-sm transition-hover">
+                    <div class="card-body p-4">
+                        <div class="text-warning mb-3">
+                            <i class="fas fa-chair fa-2x"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">Ghế nha khoa Osstem</h5>
+                        <p class="card-text text-muted small mb-3">
+                            Ghế nha khoa cao cấp giúp bác sĩ thao tác chính xác và mang lại sự thoải mái tối đa cho bệnh nhân.
+                        </p>
+                        <ul class="text-muted small ps-3 mb-0">
+                            <li class="mb-1">Tư thế điều trị chuẩn khoa học.</li>
+                            <li class="mb-1">Hệ thống hỗ trợ thông minh.</li>
+                            <li>Mang lại trải nghiệm điều trị êm ái.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dịch vụ nổi bật (lấy từ database) -->
+<section class="py-5">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h6 class="text-primary fw-bold text-uppercase">Dịch vụ của chúng tôi</h6>
+            <h2 class="fw-bold">Giải pháp nha khoa đa dạng</h2>
+        </div>
+        <div class="row g-4 justify-content-center">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var dv in Model.Take(4))
+                {
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 text-center p-4 feature-card">
+                            <i class="fa-solid fa-tooth text-primary fs-1 mb-3"></i>
+                            <h5 class="fw-bold">@dv.TenDichVu</h5>
+                            <p class="text-muted small mb-0">@(dv.MoTa ?? "Đang cập nhật")</p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-center text-muted">Chưa có dịch vụ nào.</p>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Đội ngũ bác sĩ (lấy từ database) -->
+<!-- Giờ làm việc và thông tin khác -->
+<section class="py-5 bg-dark text-white rounded-4 mx-3 mb-5">
+    <div class="container py-3">
+        <div class="row text-center align-items-center">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <i class="fa-regular fa-clock fs-1 text-info mb-2"></i>
+                <h5 class="fw-bold">Giờ làm việc</h5>
+                <p class="mb-0 small text-white-50">Sáng: 7h30 - 12h00<br />Chiều: 14h00 - 19h30</p>
+            </div>
+            <div class="col-md-4 mb-3 mb-md-0 border-start border-end border-secondary">
+                <i class="fa-solid fa-map-location-dot fs-1 text-info mb-2"></i>
+                <h5 class="fw-bold">Địa chỉ duy nhất</h5>
+                <p class="mb-0 small text-white-50">Không có chi nhánh<br />Dành cho cư dân khu vực</p>
+            </div>
+            <div class="col-md-4">
+                <i class="fa-solid fa-credit-card fs-1 text-info mb-2"></i>
+                <h5 class="fw-bold">Thanh toán & Trả góp</h5>
+                <p class="mb-0 small text-white-50">Tiền mặt, Chuyển khoản<br />Trả góp theo đợt điều trị</p>
+            </div>
+        </div>
+    </div>
+</section>
+@section Scripts {
+    <script>
+        function openDatLichModal() {
+            $.get('/ProfileWeb/GetDatLichForm', function (data) {
+                $('#modalContentDatLich').html(data);
+                $('#modalThanhVien').modal('show');
+            }).fail(function () {
+                // Nếu chưa đăng nhập thì mới chuyển hướng sang trang Login
+                window.location.href = "/AccountWeb/Login";
+            });
+        }
+
+        $(document).on('submit', '#formNewLichHen', function (e) {
+            e.preventDefault();
+            var form = $(this);
+            
+            $.post(form.attr('action'), form.serialize(), function (res) {
+                if (res.success) {
+                    // 1. Hiện thông báo
+                    alert(res.message); 
+                    
+                    // 2. Đóng Modal
+                    $('#modalThanhVien').modal('hide');
+
+                    // 3. GIỮ Ở LẠI TRANG: 
+                    // Cách 1: Load lại đúng trang hiện tại để làm sạch form
+                    location.reload(); 
+                    
+                    // Cách 2: Nếu Mi không muốn load lại trang luôn (chỉ đóng modal):
+                    // Hãy xóa dòng location.reload() ở trên đi nhé.
+                } else {
+                    alert(res.message);
+                }
+            });
+        });
+    </script>
+}

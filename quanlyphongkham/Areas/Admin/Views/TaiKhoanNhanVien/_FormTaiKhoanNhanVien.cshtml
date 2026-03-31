@@ -1,0 +1,71 @@
+﻿@model quanlyphongkham.Models.TaiKhoanNhanVien
+
+@{
+    var isEdit = Model.MaTaiKhoanNV > 0;
+}
+
+<form asp-action="@(isEdit ? "EditPartial" : "CreatePartial")" method="post" id="nhanVienForm">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    @if (isEdit)
+    {
+        <input type="hidden" asp-for="MaTaiKhoanNV" />
+    }
+
+    <div class="mb-3">
+        <label asp-for="TenDangNhap" class="form-label"></label>
+        <input asp-for="TenDangNhap" class="form-control" required />
+        <span asp-validation-for="TenDangNhap" class="text-danger"></span>
+    </div>
+
+    @if (!isEdit)
+    {
+        <div class="mb-3">
+            <label asp-for="MatKhau" class="form-label">Mật khẩu</label>
+            <input asp-for="MatKhau" class="form-control" type="password" />
+            <span asp-validation-for="MatKhau" class="text-danger"></span>
+        </div>
+    }
+
+    <div class="mb-3">
+        <label asp-for="TrangThai" class="form-label"></label>
+        <select asp-for="TrangThai" class="form-select">
+            <option value="Hoạt động">Hoạt động</option>
+            <option value="Khóa">Khóa</option>
+        </select>
+    </div>
+
+    <div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Hủy bỏ
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i>Lưu dữ liệu
+        </button>
+    </div>
+</form>
+
+<script>
+    $('#nhanVienForm').submit(function (e) {
+        e.preventDefault();
+        var form = $(this);
+        $.ajax({
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: form.serialize(),
+            success: function (result) {
+                if (result.success) {
+                    $('#nhanVienModal').modal('hide');
+                    toastr.success(result.message);
+                    reloadNhanVienList();
+                } else {
+                    $('#nhanVienModalBody').html(result);
+                }
+            },
+            error: function () {
+                toastr.error('Có lỗi xảy ra.');
+            }
+        });
+    });
+</script>

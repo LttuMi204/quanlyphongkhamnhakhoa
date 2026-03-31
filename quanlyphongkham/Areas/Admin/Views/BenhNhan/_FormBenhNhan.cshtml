@@ -1,0 +1,243 @@
+﻿@model quanlyphongkham.Models.BenhNhan
+@{
+    var isEdit = Model.MaBenhNhan > 0;
+}
+
+<form asp-action="@(isEdit ? "Edit" : "Create")"
+      asp-controller="BenhNhan"
+      asp-area="Admin"
+      method="post"
+      id="formBenhNhan">
+
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    @if (isEdit)
+    {
+        <input type="hidden" asp-for="MaBenhNhan" />
+        <input type="hidden" name="id" value="@Model.MaBenhNhan" />
+    }
+
+    <div class="row">
+        <!-- ===== CỘT TRÁI: Thông tin cơ bản ===== -->
+        <div class="col-md-6 border-end">
+            <h6 class="text-primary border-bottom pb-2 mb-3">
+                <i class="fas fa-user me-2"></i>Thông tin cá nhân
+            </h6>
+
+            <div class="mb-3">
+                <label asp-for="HoTen" class="form-label fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                <input asp-for="HoTen" class="form-control" required placeholder="Nguyễn Văn A" autocomplete="off" />
+                <span asp-validation-for="HoTen" class="text-danger small"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-7 mb-3">
+                    <label asp-for="SoDienThoai" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                    <input asp-for="SoDienThoai" class="form-control" required
+                           id="inputSoDienThoai"
+                           pattern="^0[0-9]{9}$"
+                           placeholder="09xxxxxxxx"
+                           autocomplete="off" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger small"></span>
+
+                    <!-- Cảnh báo trùng SĐT -->
+                    <div id="sdtWarningBox" class="alert alert-warning py-2 px-3 mt-1 small" style="display:none;">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <strong>Số điện thoại đã tồn tại!</strong>
+                        <div id="sdtExistingName" class="fw-bold"></div>
+                        <small id="sdtExistingInfo" class="text-muted"></small>
+                    </div>
+                </div>
+                <div class="col-md-5 mb-3">
+                    <label asp-for="NgaySinh" class="form-label">Ngày sinh</label>
+                    <input asp-for="NgaySinh" class="form-control" type="date"
+                           max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-5 mb-3">
+                    <label asp-for="GioiTinh" class="form-label">Giới tính</label>
+                    <select asp-for="GioiTinh" class="form-select">
+                        <option value="">-- Chọn --</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+                <div class="col-md-7 mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" type="email" placeholder="email@example.com" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
+                <textarea asp-for="DiaChi" class="form-control" rows="2"
+                          placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
+            </div>
+        </div>
+
+        <!-- ===== CỘT PHẢI: Liên kết TK + Y tế ===== -->
+        <div class="col-md-6">
+            <h6 class="text-info border-bottom pb-2 mb-3">
+                <i class="fas fa-link me-2"></i>Liên kết tài khoản
+            </h6>
+
+            <!-- Gợi ý liên kết khi trùng SĐT -->
+            <div id="linkSuggestionArea" class="p-2 mb-3 bg-light rounded border" style="display:none;">
+                <div class="d-flex align-items-start gap-2">
+                    <div class="form-check mt-1">
+                        <input class="form-check-input" type="checkbox" id="cbLienKetGợiY"
+                               onchange="toggleLienKetGoiY(this.checked)" />
+                    </div>
+                    <div>
+                        <label class="form-check-label fw-semibold text-primary small" for="cbLienKetGợiY">
+                            Liên kết với tài khoản của bệnh nhân trùng SĐT
+                        </label>
+                        <div id="goiYTKInfo" class="text-info small fw-semibold"></div>
+                    </div>
+                </div>
+                <input type="hidden" id="goiYMaTK" value="" />
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="MaTaiKhoan" class="form-label">Tài khoản chủ</label>
+                    <select asp-for="MaTaiKhoan" class="form-select"
+                            id="selectTaiKhoan" asp-items="ViewBag.TaiKhoanList">
+                        <option value="">-- Không liên kết --</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Quan hệ với chủ TK</label>
+                    <select name="QuanHe" class="form-select"
+                            id="selectQuanHe" asp-items="ViewBag.QuanHeList">
+                        <option value="">-- Chọn quan hệ --</option>
+                    </select>
+                    <div id="quanHeHint" class="text-warning small mt-1" style="display:none;">
+                        <i class="fas fa-info-circle me-1"></i>Bắt buộc khi chọn tài khoản
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="text-danger border-bottom pb-2 mb-3 mt-1">
+                <i class="fas fa-notes-medical me-2"></i>Thông tin y tế
+            </h6>
+
+            <div class="mb-3">
+                <label asp-for="TienSuBenh" class="form-label">Tiền sử bệnh</label>
+                <textarea asp-for="TienSuBenh" class="form-control" rows="2"
+                          placeholder="Các bệnh đã/đang mắc (nếu có)..."></textarea>
+            </div>
+            <div class="mb-2">
+                <label asp-for="DiUng" class="form-label">Dị ứng</label>
+                <textarea asp-for="DiUng" class="form-control" rows="2"
+                          placeholder="Dị ứng thuốc, thực phẩm... (nếu có)"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer px-0 pb-0 mt-3 border-top pt-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Hủy
+        </button>
+        <button type="submit" id="btnSubmitForm" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i>@(isEdit ? "Lưu thông tin" : "Lưu hồ sơ mới")
+        </button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        var sdtCheckTimeout;
+        var currentMaBN = @(isEdit ? Model.MaBenhNhan.ToString() : "0");
+
+        // ===== 1. Kiểm tra SĐT thời gian thực =====
+        $('#inputSoDienThoai').on('input', function () {
+            var sdt = $(this).val().trim();
+            $('#sdtWarningBox').hide();
+            $('#linkSuggestionArea').hide();
+            clearTimeout(sdtCheckTimeout);
+            if (sdt.length < 10) return;
+            sdtCheckTimeout = setTimeout(function () {
+                $.get('@Url.Action("CheckPhone", "BenhNhan")', { sdt: sdt, excludeId: currentMaBN }, function (res) {
+                    if (res.exists) {
+                        $('#sdtExistingName').text(res.hoTen);
+                        $('#sdtExistingInfo').text('Mã BN: #' + res.maBenhNhan + (res.tenDangNhap ? ' | TK: ' + res.tenDangNhap : ' | Chưa có TK'));
+                        $('#sdtWarningBox').slideDown(200);
+                        if (res.maTaiKhoan) {
+                            $('#goiYMaTK').val(res.maTaiKhoan);
+                            $('#goiYTKInfo').text('Tài khoản: ' + res.tenDangNhap);
+                            $('#linkSuggestionArea').slideDown(200);
+                        }
+                    } else {
+                        $('#sdtWarningBox').hide();
+                        $('#linkSuggestionArea').hide();
+                        $('#cbLienKetGợiY').prop('checked', false);
+                    }
+                });
+            }, 600);
+        });
+
+        // ===== 2. Gợi ý liên kết =====
+        window.toggleLienKetGoiY = function (checked) {
+            var maTK = $('#goiYMaTK').val();
+            if (checked && maTK) {
+                $('#selectTaiKhoan').val(maTK).trigger('change');
+            } else {
+                $('#selectTaiKhoan').val('').trigger('change');
+            }
+        };
+
+        // ===== 3. Đồng bộ dropdown Quan Hệ =====
+        function checkQuanHeStatus() {
+            var hasTK = $('#selectTaiKhoan').val();
+            $('#selectQuanHe').prop('disabled', !hasTK);
+            $('#quanHeHint').toggle(!!hasTK);
+            if (!hasTK) {
+                $('#selectQuanHe').val('');
+                $('#cbLienKetGợiY').prop('checked', false);
+            }
+        }
+        $('#selectTaiKhoan').on('change', checkQuanHeStatus);
+        checkQuanHeStatus();
+
+        // ===== 4. Submit AJAX =====
+        $('#formBenhNhan').off('submit').on('submit', function (e) {
+            e.preventDefault();
+            if ($('#sdtWarningBox').is(':visible')) {
+                toastr.error('Số điện thoại đã tồn tại cho bệnh nhân "' + $('#sdtExistingName').text() + '". Vui lòng kiểm tra lại!');
+                $('#inputSoDienThoai').focus();
+                return;
+            }
+            var form = $(this);
+            var btn = $('#btnSubmitForm');
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang lưu...');
+            $.ajax({
+                type: 'POST',
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        $('#mainModal').modal('hide');
+                        toastr.success(res.message);
+                        if (typeof loadTabDanhSach === 'function') loadTabDanhSach();
+                    } else {
+                        if (typeof res === 'string') {
+                            $('#mainModalBody').html(res);
+                        } else {
+                            toastr.error(res.message || 'Có lỗi xảy ra!');
+                            btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i>@(isEdit ? "Lưu thông tin" : "Lưu hồ sơ mới")');
+                        }
+                    }
+                },
+                error: function () {
+                    toastr.error('Lỗi kết nối máy chủ! Vui lòng thử lại.');
+                    btn.prop('disabled', false).html('<i class="fas fa-redo me-1"></i>Thử lại');
+                }
+            });
+        });
+    });
+</script>

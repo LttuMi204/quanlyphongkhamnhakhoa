@@ -1,0 +1,56 @@
+﻿@model IEnumerable<quanlyphongkham.Areas.Admin.ViewModels.PhanQuyenViewModel>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header py-3 bg-white d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-shield-alt me-2"></i>Bảng phân quyền chức năng hệ thống</h6>
+        <small class="text-muted fst-italic">Phân quyền được áp dụng tự động theo chức vụ.</small>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover text-center align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-start ps-3">Chức vụ (Loại NV)</th>
+                        <th>Xem Lịch</th>
+                        <th>Sửa Lịch</th>
+                        <th>Xem Hồ Sơ</th>
+                        <th>Sửa Hồ Sơ</th>
+                        <th>QL Kho</th>
+                        <th>QL Nhân Sự</th>
+                        <th width="100">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-start ps-3 font-weight-bold text-primary">@item.TenLoaiNV</td>
+                            <td><i class="fas @(item.XemLich ? "fa-check-circle text-success fs-5" : "fa-times-circle text-danger opacity-25")"></i></td>
+                            <td><i class="fas @(item.SuaLich ? "fa-check-circle text-success fs-5" : "fa-times-circle text-danger opacity-25")"></i></td>
+                            <td><i class="fas @(item.XemHoSo ? "fa-check-circle text-success fs-5" : "fa-times-circle text-danger opacity-25")"></i></td>
+                            <td><i class="fas @(item.SuaHoSo ? "fa-check-circle text-success fs-5" : "fa-times-circle text-danger opacity-25")"></i></td>
+                            <td><i class="fas @(item.QuanLyKho ? "fa-check-circle text-success fs-5" : "fa-times-circle text-danger opacity-25")"></i></td>
+                            <td><i class="fas @(item.QuanLyNhanSu ? "fa-check-circle text-success fs-5" : "fa-times-circle text-danger opacity-25")"></i></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-warning" onclick="openEditPhanQuyen(@item.MaLoaiNV, '@item.TenLoaiNV')" title="Cấp quyền">
+                                    <i class="fas fa-edit"></i> Chỉnh
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hàm mở form Sửa Phân Quyền (Load vào Modal dùng chung của trang Quản Lý)
+    function openEditPhanQuyen(id, tenLoai) {
+        $.get('@Url.Action("EditPartial", "PhanQuyen", new { area = "Admin" })', { id: id }, function (data) {
+            $('#mainHrModalLabel').text("Phân quyền hệ thống - Chức vụ: " + tenLoai);
+            $('#mainHrModalBody').html(data);
+            $('#mainHrModal').modal("show");
+        });
+    }
+</script>

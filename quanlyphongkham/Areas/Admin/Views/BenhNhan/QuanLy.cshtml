@@ -1,0 +1,272 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Bệnh nhân";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800 fw-bold">
+            <i class="fas fa-user-injured me-2 text-primary"></i>@ViewData["Title"]
+        </h1>
+        <button class="btn btn-primary shadow-sm btn-add-main" onclick="openCreateBN()">
+            <i class="fas fa-user-plus me-1"></i> Thêm bệnh nhân mới
+        </button>
+    </div>
+
+    <ul class="nav nav-tabs border-bottom-0" id="benhNhanTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#danhsach" type="button" onclick="loadTabDanhSach()">
+                <i class="fas fa-users me-2"></i>Danh sách bệnh nhân
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#hoso" type="button" onclick="loadTabHoSo()">
+                <i class="fas fa-file-medical me-2"></i>Hồ sơ bệnh án
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#taikhoan" type="button" onclick="loadTabTaiKhoan()">
+                <i class="fas fa-user-shield me-2"></i>Tài khoản bệnh nhân
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content card shadow-sm border-top-0 p-4" id="benhNhanTabContent">
+        <div class="tab-pane fade show active" id="danhsach" role="tabpanel">
+            <div id="danhSachContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="hoso" role="tabpanel">
+            <div id="hoSoContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="taikhoan" role="tabpanel">
+            <div id="taiKhoanBNContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mainModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="mainModalTitle">Cập nhật</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="mainModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var searchTimeout, hoSoTimeout, tkTimeout;
+
+        $(document).ready(function () {
+            loadTabDanhSach(1);
+        });
+
+        $('#danhsach-tab').on('shown.bs.tab', function () {
+            loadTabDanhSach(1);
+        });
+
+        // ===================== DANH SÁCH BỆNH NHÂN =====================
+        function loadTabDanhSach(page = 1) {
+            var search = $('#searchBN').val() || '';
+            var gioiTinh = $('#filterGioiTinh').val() || '';
+            $.get('@Url.Action("DanhSachPartial", "BenhNhan")', { page, search, gioiTinh }, function (data) {
+                $('#danhSachContainer').html(data);
+            });
+        }
+
+        function debounceSearchBN() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => loadTabDanhSach(1), 500);
+        }
+
+        function searchBNForm(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            loadTabDanhSach(1);
+        }
+
+        function openCreateBN() {
+            $.get('@Url.Action("Create", "BenhNhan")', function (data) {
+                $('#mainModalTitle').html('<i class="fas fa-user-plus me-2"></i>Thêm bệnh nhân mới');
+                $('#mainModalBody').html(data);
+                $('#mainModal').modal('show');
+            });
+        }
+
+        function openEditBN(id) {
+            $.get('@Url.Action("Edit", "BenhNhan")/' + id, function (data) {
+                $('#mainModalTitle').html('<i class="fas fa-user-edit me-2"></i>Sửa thông tin bệnh nhân');
+                $('#mainModalBody').html(data);
+                $('#mainModal').modal('show');
+            }).fail(function () {
+                toastr.error('Không thể tải form sửa thông tin!');
+            });
+        }
+
+        function viewBenhNhan(id) {
+            $.get('@Url.Action("Details", "BenhNhan")/' + id, function (data) {
+                $('#mainModalTitle').html('<i class="fas fa-id-card me-2"></i>Chi tiết bệnh nhân');
+                $('#mainModalBody').html(data);
+                $('#mainModal').modal('show');
+            }).fail(function () {
+                toastr.error('Không thể tải thông tin bệnh nhân!');
+            });
+        }
+
+        function deleteBenhNhan(id) {
+            if (!confirm("Xóa bệnh nhân sẽ xóa toàn bộ hồ sơ và lịch hẹn liên quan. Bạn chắc chắn chứ?")) return;
+            $.post('@Url.Action("Delete", "BenhNhan")', {
+                id: id,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val()
+            }, function (res) {
+                if (res.success) {
+                    toastr.success(res.message);
+                    loadTabDanhSach();
+                } else {
+                    toastr.error(res.message);
+                }
+            }).fail(function () {
+                toastr.error('Có lỗi xảy ra khi kết nối máy chủ!');
+            });
+        }
+
+        // ===================== HỒ SƠ BỆNH ÁN =====================
+        $('#hoso-tab').on('shown.bs.tab', function () { loadTabHoSo(1); });
+
+        function loadTabHoSo(page = 1) {
+            var search = $('#searchGrid').val() || '';
+            $.get('@Url.Action("GridPartial", "HoSoBenhAn")', { search, page }, function (data) {
+                $('#hoSoContainer').html(data);
+            });
+        }
+
+        function debounceSearchGrid() {
+            clearTimeout(hoSoTimeout);
+            hoSoTimeout = setTimeout(() => loadTabHoSo(1), 500);
+        }
+
+        function loadHoSoByBenhNhan(id) {
+            $('#mainModalTitle').html('<i class="fas fa-history me-2"></i>Lịch sử khám bệnh');
+            $('#mainModalBody').html('<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>');
+            $('#mainModal').modal('show');
+            $.get('@Url.Action("GetByBenhNhan", "HoSoBenhAn", new { area = "Admin" })', { id }, function (data) {
+                $('#mainModalBody').html(data);
+            });
+        }
+
+        function xemChiTietCaKham(maHoSo) {
+            $('#danhSachKhamArea').hide();
+            $('#chiTietKhamArea').fadeIn(300);
+            $('#noidungChiTietKham').html('<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>');
+            $.get('@Url.Action("ChiTietPartial", "HoSoBenhAn")', { id: maHoSo }, function (data) {
+                $('#noidungChiTietKham').html(data);
+                $('#noidungChiTietKham .modal-footer').hide();
+            });
+        }
+
+        function quayLaiDanhSach() {
+            $('#chiTietKhamArea').hide();
+            $('#danhSachKhamArea').fadeIn(300);
+        }
+
+        function xemChiTietHoSoTuTaiKhoan(maHoSo) {
+            $('#mainModalTitle').html('<i class="fas fa-file-medical-alt me-2"></i>Chi tiết ca khám');
+            $('#mainModalBody').html('<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>');
+            $('#mainModal').modal('show');
+            $.get('@Url.Action("ChiTietPartial", "HoSoBenhAn", new { area = "Admin" })', { id: maHoSo }, function (data) {
+                $('#mainModalBody').html(data);
+                $('#mainModalBody .modal-footer').remove();
+            });
+        }
+
+        // ===================== TÀI KHOẢN BỆNH NHÂN =====================
+        $('#taikhoan-tab').on('shown.bs.tab', function () { loadTabTaiKhoan(1); });
+
+        function loadTabTaiKhoan(page = 1) {
+            var search = $('#searchTkNguoiDung').val() || '';
+            var filterBy = $('#filterByTkNguoiDung').val() || '';
+            $.get('@Url.Action("IndexPartial", "TaiKhoanNguoiDung")', { page, search, filterBy }, function (data) {
+                $('#taiKhoanBNContainer').html(data);
+            });
+        }
+
+        function debounceSearchTK() {
+            clearTimeout(tkTimeout);
+            tkTimeout = setTimeout(() => loadTabTaiKhoan(1), 500);
+        }
+
+        function openCreateTK() {
+            $.get('@Url.Action("CreatePartial", "TaiKhoanNguoiDung", new { area = "Admin" })', function (data) {
+                $('#mainModalTitle').html('<i class="fas fa-user-plus me-2"></i>Tạo tài khoản mới');
+                $('#mainModalBody').html(data);
+                $('#mainModal').modal('show');
+            }).fail(function () { toastr.error('Không thể tải Form tạo tài khoản!'); });
+        }
+
+        function openEditTK(id) {
+            $.get('@Url.Action("EditPartial", "TaiKhoanNguoiDung")/' + id, function (data) {
+                $('#mainModalTitle').html('<i class="fas fa-user-edit me-2"></i>Chỉnh sửa tài khoản');
+                $('#mainModalBody').html(data);
+                $('#mainModal').modal('show');
+            });
+        }
+
+        function viewTaiKhoan(id) {
+            $.get('@Url.Action("DetailsPartial", "TaiKhoanNguoiDung")/' + id, function (data) {
+                $('#mainModalTitle').html('<i class="fas fa-shield-alt me-2"></i>Chi tiết tài khoản');
+                $('#mainModalBody').html(data);
+                $('#mainModal').modal('show');
+            });
+        }
+
+        function deleteTaiKhoan(id) {
+            if (!confirm('Xóa tài khoản này? Bệnh nhân liên kết sẽ bị hủy liên kết nhưng hồ sơ khám vẫn được giữ lại.')) return;
+            $.post('@Url.Action("Delete", "TaiKhoanNguoiDung")', {
+                id,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val()
+            }, function (res) {
+                if (res.success) { toastr.success(res.message); loadTabTaiKhoan(); }
+                else toastr.error(res.message);
+            }).fail(function () { toastr.error('Có lỗi xảy ra khi kết nối máy chủ.'); });
+        }
+
+        function themLienKetBN() {
+            var maTK = $('#linkMaTK').val(), sdt = $('#linkSDT').val(), qh = $('#linkQuanHe').val();
+            if (!sdt || !qh) { toastr.warning('Vui lòng nhập SĐT bệnh nhân và chọn quan hệ!'); return; }
+            $.post('@Url.Action("AddBenhNhanLink", "TaiKhoanNguoiDung")', { maTaiKhoan: maTK, soDienThoai: sdt, quanHe: qh }, function (res) {
+                if (res.success) { toastr.success(res.message); viewTaiKhoan(maTK); loadTabTaiKhoan(); }
+                else toastr.error(res.message);
+            });
+        }
+
+        function goLienKetBN(maTK, maBN) {
+            if (!confirm('Hủy liên kết bệnh nhân này khỏi tài khoản?')) return;
+            var token = $('#tkTokenContainer input[name="__RequestVerificationToken"]').val();
+            $.post('@Url.Action("RemoveBenhNhan", "TaiKhoanNguoiDung")', { maTaiKhoan: maTK, maBenhNhan: maBN, __RequestVerificationToken: token }, function (res) {
+                if (res.success) { toastr.success(res.message); viewTaiKhoan(maTK); loadTabTaiKhoan(); }
+                else toastr.error(res.message);
+            }).fail(function () { toastr.error('Có lỗi xảy ra khi kết nối đến máy chủ.'); });
+        }
+
+        function searchTKForm(e) { if (e) e.preventDefault(); loadTabTaiKhoan(1); }
+
+        function resetMatKhau(id) {
+            if (!confirm('Đặt lại mật khẩu về mặc định (123456)?')) return;
+            $.post('@Url.Action("ResetPassword", "TaiKhoanNguoiDung")', {
+                id,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val()
+            }, function (res) {
+                if (res.success) toastr.success(res.message);
+                else toastr.error(res.message);
+            }).fail(function () { toastr.error('Có lỗi xảy ra khi kết nối đến máy chủ.'); });
+        }
+    </script>
+}

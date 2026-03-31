@@ -1,0 +1,90 @@
+﻿@model quanlyphongkham.Areas.Admin.ViewModels.PhanQuyenViewModel
+
+<form asp-action="EditPartial" method="post" id="formPhanQuyen">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="MaLoaiNV" />
+    <input type="hidden" asp-for="TenLoaiNV" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="alert alert-info py-2 mb-4">
+        <i class="fas fa-info-circle me-2"></i>Bật/tắt công tắc để cấp hoặc thu hồi quyền hạn cho nhóm <strong>@Model.TenLoaiNV</strong>.
+    </div>
+
+    <div class="row px-3">
+        <div class="col-md-6 border-end">
+            <h6 class="text-primary mb-3"><i class="fas fa-calendar-check me-2"></i>Nghiệp vụ khám bệnh</h6>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input fs-5 cursor-pointer" type="checkbox" asp-for="XemLich" id="xemLichSwitch">
+                <label class="form-check-label ms-2 pt-1" for="xemLichSwitch">Được phép <strong>Xem Lịch Hẹn</strong></label>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input fs-5 cursor-pointer" type="checkbox" asp-for="SuaLich" id="suaLichSwitch">
+                <label class="form-check-label ms-2 pt-1" for="suaLichSwitch">Được phép <strong>Sửa/Xóa/Xác nhận Lịch Hẹn</strong></label>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input fs-5 cursor-pointer" type="checkbox" asp-for="XemHoSo" id="xemHoSoSwitch">
+                <label class="form-check-label ms-2 pt-1" for="xemHoSoSwitch">Được phép <strong>Xem Hồ Sơ Bệnh Án</strong></label>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input fs-5 cursor-pointer" type="checkbox" asp-for="SuaHoSo" id="suaHoSoSwitch">
+                <label class="form-check-label ms-2 pt-1" for="suaHoSoSwitch">Được phép <strong>Tạo mới/Sửa Hồ Sơ</strong></label>
+            </div>
+        </div>
+
+        <div class="col-md-6 ps-4">
+            <h6 class="text-danger mb-3"><i class="fas fa-cogs me-2"></i>Nghiệp vụ Quản trị</h6>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input fs-5 cursor-pointer" type="checkbox" asp-for="XemDoanhThu" id="xemDoanhThuSwitch">
+                <label class="form-check-label ms-2 pt-1" for="xemDoanhThuSwitch">Được phép <strong>Xem Báo Cáo Tài Chính</strong></label>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input fs-5 cursor-pointer" type="checkbox" asp-for="QuanLyKho" id="qlKhoSwitch">
+                <label class="form-check-label ms-2 pt-1" for="qlKhoSwitch">Được phép <strong>Quản Lý Kho Vật Tư</strong></label>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input fs-5 cursor-pointer" type="checkbox" asp-for="QuanLyNhanSu" id="qlNhanSuSwitch">
+                <label class="form-check-label ms-2 pt-1" for="qlNhanSuSwitch">Được phép <strong>Quản Lý Nhân Sự & Tài Khoản</strong></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer px-0 pb-0 mt-4 border-top pt-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu phân quyền</button>
+    </div>
+</form>
+
+<script>
+    $('#formPhanQuyen').submit(function (e) {
+        e.preventDefault();
+        var form = $(this);
+        $.ajax({
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: form.serialize(),
+            success: function (result) {
+                if (result.success) {
+                    $('#mainHrModal').modal('hide');
+                    toastr.success(result.message);
+
+                    // Gọi hàm load lại bảng Phân Quyền (Hàm này bạn đã định nghĩa ở QuanLy.cshtml)
+                    loadTabPhanQuyen();
+                } else {
+                    // Nếu lỗi (vd Validate), load lại chính form này vào Modal
+                    $('#mainHrModalBody').html(result);
+                }
+            },
+            error: function () {
+                toastr.error('Có lỗi xảy ra trong quá trình lưu dữ liệu.');
+            }
+        });
+    });
+</script>

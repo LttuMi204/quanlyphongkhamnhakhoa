@@ -1,0 +1,104 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Kho Vật tư";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800 fw-bold">
+            <i class="fas fa-boxes me-2 text-primary"></i>@ViewData["Title"]
+        </h1>
+        <button class="btn btn-primary shadow-sm btn-add-main" onclick="openFormVatTu(0)">
+            <i class="fas fa-box-open me-1"></i> Thêm vật tư mới
+        </button>
+    </div>
+
+    <ul class="nav nav-tabs border-bottom-0" id="khoTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#ds-vattu" onclick="loadDSVatTu()">
+                <i class="fas fa-list me-2"></i>Danh mục Vật tư
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#nhap-kho" onclick="loadNhapKho()">
+                <i class="fas fa-file-import me-2"></i>Nhập kho
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#xuat-kho" onclick="loadXuatKho()">
+                <i class="fas fa-file-export me-2"></i>Nhật ký Xuất kho
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content card shadow-sm border-top-0 p-4" id="khoTabContent">
+        <div class="tab-pane fade show active" id="ds-vattu" role="tabpanel">
+            <div id="dsVatTuContainer">
+                <div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p>Đang tải danh mục vật tư...</p></div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="nhap-kho" role="tabpanel">
+            <div id="nhapKhoContainer">
+                <div class="text-center py-5"><div class="spinner-border text-info" role="status"></div><p>Đang tải phiếu nhập kho...</p></div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="xuat-kho" role="tabpanel">
+            <div id="xuatKhoContainer">
+                <div class="text-center py-5"><div class="spinner-border text-warning" role="status"></div><p>Đang tải nhật ký xuất kho...</p></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="khoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="khoModalLabel">Tiêu đề Modal</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="khoModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(() => loadDSVatTu());
+
+        function loadDSVatTu() {
+            $('#dsVatTuContainer').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p>Đang tải...</p></div>');
+            $.get('@Url.Action("DanhSachPartial", "VatTu", new { area = "Admin" })', function (data) {
+                $('#dsVatTuContainer').html(data);
+            });
+        }
+
+        function loadNhapKho(maVatTu = null) {
+            $('#nhapKhoContainer').html('<div class="text-center py-5"><div class="spinner-border text-info" role="status"></div><p>Đang tải...</p></div>');
+            $.get('@Url.Action("NhapKhoPartial", "VatTu", new { area = "Admin" })', { maVatTu: maVatTu }, function (data) {
+                $('#nhapKhoContainer').html(data);
+            });
+        }
+
+        function loadXuatKho() {
+            $('#xuatKhoContainer').html('<div class="text-center py-5"><div class="spinner-border text-warning" role="status"></div><p>Đang tải...</p></div>');
+            $.get('@Url.Action("XuatKhoPartial", "VatTu", new { area = "Admin" })', function (data) {
+                $('#xuatKhoContainer').html(data);
+            });
+        }
+
+        function openFormVatTu(id) {
+            $.get('@Url.Action("GetFormPartial", "VatTu", new { area = "Admin" })', { id: id }, function (data) {
+                $('#khoModalLabel').html(id == 0 ? '<i class="fas fa-plus-circle me-2"></i>Thêm vật tư mới' : '<i class="fas fa-edit me-2"></i>Sửa thông tin vật tư');
+                $('#khoModalBody').html(data);
+                $('#khoModal').modal('show');
+            });
+        }
+
+        // Hàm chuyển từ danh sách vật tư sang tab nhập kho và tự chọn mã vật tư
+        function switchAndNhapKho(maVatTu) {
+            $('#khoTab button[data-bs-target="#nhap-kho"]').tab('show');
+            loadNhapKho(maVatTu);
+        }
+    </script>
+}

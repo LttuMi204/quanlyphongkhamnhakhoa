@@ -1,0 +1,54 @@
+﻿@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Dashboard Lễ tân";
+    // Ép kiểu dữ liệu từ ViewBag
+    var lichHens = ViewBag.LichHenHomNay as IEnumerable<quanlyphongkham.Models.LichHen>;
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-3">
+            <div class="small fw-bold">LỊCH KHÁM HÔM NAY</div>
+            <div class="h2 fw-bold">@ViewBag.LichHenHomNayCount</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 bg-warning text-dark p-3">
+            <div class="small fw-bold">YÊU CẦU CHỜ XỬ LÝ</div>
+            <div class="h2 fw-bold">@ViewBag.YeuCauMoiCount</div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header bg-white py-3">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-list me-2"></i>DANH SÁCH TIẾP ĐÓN TRONG NGÀY</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <tbody>
+                    @if (ViewBag.YeuCauMoi != null)
+                    {
+                        foreach (var yc in ViewBag.YeuCauMoi)
+                        {
+                            <tr>
+                                <td>@yc.HoTen</td>
+                                <td>@yc.SoDienThoai</td>
+                                <td>@yc.NgayHen.ToString("dd/MM/yyyy")</td>
+                                <td><span class="badge bg-warning text-dark">@yc.TrangThai</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary">Xử lý</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="5" class="text-center">Không có yêu cầu mới nào.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

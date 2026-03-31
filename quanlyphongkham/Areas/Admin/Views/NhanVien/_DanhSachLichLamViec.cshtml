@@ -1,0 +1,159 @@
+﻿@model IEnumerable<quanlyphongkham.Models.LichLamViec>
+
+@{
+    string[] thu = { "", "", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật" };
+}
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/vi.js"></script>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-clock me-2"></i>Lịch làm việc
+        </h6>
+    </div>
+    <div class="card-body bg-light border-bottom py-3">
+        <form class="row g-2 align-items-end" onsubmit="event.preventDefault();">
+
+            <div class="col-md-3">
+                <label class="form-label small fw-bold mb-1 text-muted">Tìm nhân viên</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="searchNameLich" class="form-control" placeholder="Nhập tên..." oninput="debounceLichLamViec()" />
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold mb-1 text-muted">Lọc theo Ca</label>
+                <select id="filterCaLam" class="form-select" onchange="refreshCalendar()">
+                    <option value="">Tất cả ca</option>
+                    <option value="Sáng">Ca Sáng</option>
+                    <option value="Chiều">Ca Chiều</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small fw-bold mb-1 text-muted">Lọc chức vụ</label>
+                <select id="filterMaLoaiNV" class="form-select" asp-items="ViewBag.LoaiNhanVienList" onchange="refreshCalendar()">
+                    <option value="">Toàn bộ chức vụ</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label small fw-bold mb-1 text-muted">Lọc nhân viên</label>
+                <select id="filterMaNhanVien" class="form-select" asp-items="ViewBag.NhanVienList" onchange="refreshCalendar()">
+                    <option value="">Chọn nhân viên</option>
+                </select>
+            </div>
+
+            <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-outline-secondary w-100" onclick="refreshCalendar()" title="Tải lại">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-body">
+        <div id="calendar" style="min-height: 600px;"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="chiTietCaLamModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white py-2">
+                <h6 class="modal-title mb-0"><i class="fas fa-clock me-2"></i>Thông tin ca làm</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-1"><strong>Nhân viên:</strong> <span id="modalEventTitle" class="text-primary"></span></p>
+                <p class="mb-1"><strong>Thời gian:</strong> <span id="modalEventTime"></span></p>
+                <hr class="my-2" />
+                <p class="mb-0 text-muted small"><i class="fas fa-info-circle me-1"></i><span id="modalEventDesc"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var calendar;
+    var lichTimeout; // Biến dùng cho Live Search
+
+    $(document).ready(function () {
+        initCalendar();
+    });
+
+    function initCalendar() {
+        var calendarEl = document.getElementById('calendar');
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'vi',
+            initialView: 'timeGridWeek',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            },
+            slotMinTime: '07:00:00',
+            slotMaxTime: '20:00:00', // Đã kéo dài tới 20h để chứa ca 19h30
+            allDaySlot: false,
+            nowIndicator: true,
+            buttonText: {
+                today: 'Hôm nay', month: 'Tháng', week: 'Tuần', day: 'Ngày', list: 'Danh sách'
+            },
+            events: function (info, successCallback, failureCallback) {
+                // Lấy tất cả giá trị từ bộ lọc
+                var maLoai = $('#filterMaLoaiNV').val();
+                var maNV = $('#filterMaNhanVien').val();
+                var searchName = $('#searchNameLich').val();
+                var caLam = $('#filterCaLam').val();
+
+                $.ajax({
+                    url: '@Url.Action("GetLichLamViecData", "LichLamViec", new { area = "Admin" })',
+                    type: 'GET',
+                    data: {
+                        maLoaiNV: maLoai || null,
+                        maNhanVien: maNV || null,
+                        searchName: searchName || '',
+                        caLam: caLam || ''
+                    },
+                    success: function (data) {
+                        successCallback(data);
+                    },
+                    error: function () {
+                        failureCallback();
+                        toastr.error('Lỗi khi tải dữ liệu lịch làm việc!');
+                    }
+                });
+            },
+            eventClick: function (info) {
+                var startTime = info.event.start.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                var endTime = info.event.end ? info.event.end.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '';
+
+                $('#modalEventTitle').text(info.event.title);
+                $('#modalEventTime').text(startTime + (endTime ? ' - ' + endTime : ''));
+                $('#modalEventDesc').text(info.event.extendedProps.description);
+                $('#chiTietCaLamModal').modal('show');
+            }
+        });
+
+        calendar.render();
+    }
+
+    function refreshCalendar() {
+        if (calendar) {
+            calendar.refetchEvents();
+        }
+    }
+
+    // Hàm Live Search: Gõ chữ xong khựng 500ms là tự tìm
+    function debounceLichLamViec() {
+        clearTimeout(lichTimeout);
+        lichTimeout = setTimeout(function () {
+            refreshCalendar();
+        }, 500);
+    }
+</script>

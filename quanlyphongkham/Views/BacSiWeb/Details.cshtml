@@ -1,0 +1,34 @@
+﻿@* @model quanlyphongkham.Models.BacSiWebViewModel
+@{
+    ViewData["Title"] = Model.HoTen;
+}
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <img src="https://img.freepik.com/free-photo/doctor-with-stethoscope_23-2148768356.jpg"
+                     class="img-fluid rounded-4 shadow" alt="@Model.HoTen">
+            </div>
+            <div class="col-lg-8">
+                <h2 class="fw-bold text-primary">@Model.HoTen</h2>
+                <p class="lead">@(Model.ChuyenKhoaChinh ?? Model.ChuyenKhoa ?? "Nha khoa tổng quát")</p>
+                <hr>
+                <p><strong>Kinh nghiệm:</strong> @(Model.SoNamKinhNghiem ?? 0) năm</p>
+                <p><strong>Chuyên khoa:</strong> @Model.ChuyenKhoa</p>
+                @if (!string.IsNullOrEmpty(Model.MoTaChuyenMon))
+                {
+                    <p><strong>Mô tả chuyên môn:</strong> @Model.MoTaChuyenMon</p>
+                }
+                @if (!string.IsNullOrEmpty(Model.GioiThieu))
+                {
+                    <p><strong>Giới thiệu:</strong> @Model.GioiThieu</p>
+                }
+                <p><strong>Email:</strong> @Model.Email</p>
+                <p><strong>Số điện thoại:</strong> @Model.SoDienThoai</p>
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">Quay lại</a>
+                <a asp-controller="DatLichWeb" asp-action="Create" asp-route-bacSiId="@Model.MaBacSi" class="btn btn-primary rounded-pill">Đặt lịch với bác sĩ</a>
+            </div>
+        </div>
+    </div>
+</section> *@

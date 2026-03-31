@@ -1,0 +1,50 @@
+﻿@{
+    Layout = "_Layout";
+}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="py-4 text-center" style="background-color: #f0f7ff;">
+                    <div class="bg-white d-inline-block p-3 rounded-circle shadow-sm mb-3">
+                        <i class="fas fa-user-lock fa-2x" style="color: #72a1ff;"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-0 text-uppercase">Đăng nhập tài khoản</h4>
+                </div>
+                <div class="card-body p-4 p-lg-5">
+                    <form asp-action="Login" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">TÊN ĐĂNG NHẬP</label>
+                            <input type="text" name="tenDangNhap" class="form-control rounded-pill border-0 bg-light px-3 py-2" required />
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary">MẬT KHẨU</label>
+                            <input type="password" name="matKhau" id="pwdMain" class="form-control rounded-pill border-0 bg-light px-3 py-2" required />
+
+                            <div class="form-check mt-2 ms-2">
+                                <input class="form-check-input" type="checkbox" id="checkShow">
+                                <label class="form-check-label small text-muted" for="checkShow">Hiện mật khẩu</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm" style="background-color: #72a1ff; border:none;">ĐĂNG NHẬP NGAY</button>
+                    </form>
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <small class="text-muted">Bạn là khách mới? <a href="/AccountWeb/Register" class="fw-bold text-decoration-none" style="color: #72a1ff;">Đăng ký thành viên</a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+    // Logic hiện mật khẩu chung
+    $(document).on('change', '#checkShow, #showPwdProfile', function () {
+        // Tìm tất cả các input có type password trong cùng form hoặc class chỉ định
+        const type = $(this).is(':checked') ? 'text' : 'password';
+        $('.pwd-input, #pwdMain, #txtPassword, input[type="password"], input[name="matKhau"]').attr('type', type);
+    });
+    </script>
+}

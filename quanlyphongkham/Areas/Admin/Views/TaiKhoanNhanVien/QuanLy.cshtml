@@ -1,0 +1,220 @@
+﻿@model IEnumerable<quanlyphongkham.Areas.Admin.ViewModels.TaiKhoanNhanVienViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">@ViewData["Title"]</h1>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" id="accountTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="nhanvien-tab" data-bs-toggle="tab" data-bs-target="#nhanvien" type="button">
+                <i class="fas fa-user-tie"></i> Tài khoản nhân viên
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="nguoidung-tab" data-bs-toggle="tab" data-bs-target="#nguoidung" type="button">
+                <i class="fas fa-user"></i> Tài khoản người dùng
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="phanquyen-tab" data-bs-toggle="tab" data-bs-target="#phanquyen" type="button">
+                <i class="fas fa-lock"></i> Phân quyền
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="accountTabContent">
+
+        <!-- TAB 1: Tài khoản nhân viên (render sẵn) -->
+        <div class="tab-pane fade show active p-3" id="nhanvien" role="tabpanel">
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="openCreateNhanVienModal()">
+                    <i class="fas fa-plus"></i> Thêm tài khoản nhân viên
+                </button>
+            </div>
+            <div id="nhanVienContainer">
+                @await Html.PartialAsync("_DanhSachTaiKhoanNhanVien", Model)
+            </div>
+        </div>
+
+        <!-- TAB 2: Tài khoản người dùng (load bằng ajax) -->
+        <div class="tab-pane fade p-3" id="nguoidung" role="tabpanel">
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="openCreateNguoiDungModal()">
+                    <i class="fas fa-plus"></i> Thêm tài khoản người dùng
+                </button>
+            </div>
+            <div id="nguoiDungContainer">
+                <p class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</p>
+            </div>
+        </div>
+
+        <!-- TAB 3: Phân quyền (load bằng ajax) -->
+        <div class="tab-pane fade p-3" id="phanquyen" role="tabpanel">
+            <div id="phanQuyenContainer">
+                <p class="text-center"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thêm/sửa tài khoản nhân viên -->
+<div class="modal fade" id="nhanVienModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nhanVienModalLabel">Thêm tài khoản nhân viên</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="nhanVienModalBody"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thêm/sửa tài khoản người dùng -->
+<div class="modal fade" id="nguoiDungModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nguoiDungModalLabel">Thêm tài khoản người dùng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="nguoiDungModalBody"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal phân quyền -->
+<div class="modal fade" id="phanQuyenModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="phanQuyenModalLabel">Phân quyền</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="phanQuyenModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Kích hoạt lazy load cho tab 2 và 3
+        document.getElementById('nguoidung-tab').addEventListener('shown.bs.tab', function (e) {
+            loadTabNguoiDung();
+        });
+        document.getElementById('phanquyen-tab').addEventListener('shown.bs.tab', function (e) {
+            loadTabPhanQuyen();
+        });
+
+        function loadTabNguoiDung() {
+            var container = $('#nguoiDungContainer');
+            if (container.children().length > 0 && container.find('table').length > 0) return;
+            $.get('@Url.Action("IndexPartial", "TaiKhoanNguoiDung", new { area = "Admin" })', function (data) {
+                container.html(data);
+            }).fail(function () {
+                container.html('<p class="text-danger">Lỗi tải dữ liệu. Vui lòng thử lại.</p>');
+            });
+        }
+
+        function loadTabPhanQuyen() {
+            var container = $('#phanQuyenContainer');
+            if (container.children().length > 0 && container.find('table').length > 0) return;
+            $.get('@Url.Action("IndexPartial", "PhanQuyen", new { area = "Admin" })', function (data) {
+                container.html(data);
+            }).fail(function () {
+                container.html('<p class="text-danger">Lỗi tải dữ liệu. Vui lòng thử lại.</p>');
+            });
+        }
+
+        // =================== TÀI KHOẢN NHÂN VIÊN ===================
+        function openCreateNhanVienModal() {
+            $.get('@Url.Action("CreatePartial", "TaiKhoanNhanVien", new { area = "Admin" })', function (data) {
+                $("#nhanVienModalLabel").text("Thêm tài khoản nhân viên");
+                $("#nhanVienModalBody").html(data);
+                $("#nhanVienModal").modal("show");
+            });
+        }
+
+        function openEditNhanVienModal(id) {
+            $.get('@Url.Action("EditPartial", "TaiKhoanNhanVien", new { area = "Admin" })', { id: id }, function (data) {
+                $("#nhanVienModalLabel").text("Sửa tài khoản nhân viên");
+                $("#nhanVienModalBody").html(data);
+                $("#nhanVienModal").modal("show");
+            });
+        }
+
+        function deleteNhanVien(id) {
+            if (!confirm("Bạn có chắc muốn xóa tài khoản nhân viên này?")) return;
+            $.post('@Url.Action("Delete", "TaiKhoanNhanVien", new { area = "Admin" })', { id: id }, function (result) {
+                if (result.success) {
+                    toastr.success(result.message);
+                    reloadNhanVienList();
+                } else {
+                    toastr.error(result.message);
+                }
+            });
+        }
+
+        function reloadNhanVienList() {
+            $.get('@Url.Action("IndexPartial", "TaiKhoanNhanVien", new { area = "Admin" })', function (data) {
+                $("#nhanVienContainer").html(data);
+            });
+        }
+
+        // =================== TÀI KHOẢN NGƯỜI DÙNG ===================
+        function openCreateNguoiDungModal() {
+            $.get('@Url.Action("CreatePartial", "TaiKhoanNguoiDung", new { area = "Admin" })', function (data) {
+                $("#nguoiDungModalLabel").text("Thêm tài khoản người dùng");
+                $("#nguoiDungModalBody").html(data);
+                $("#nguoiDungModal").modal("show");
+            });
+        }
+
+        function openEditNguoiDungModal(id) {
+            $.get('@Url.Action("EditPartial", "TaiKhoanNguoiDung", new { area = "Admin" })', { id: id }, function (data) {
+                $("#nguoiDungModalLabel").text("Sửa tài khoản người dùng");
+                $("#nguoiDungModalBody").html(data);
+                $("#nguoiDungModal").modal("show");
+            });
+        }
+
+        function deleteNguoiDung(id) {
+            if (!confirm("Bạn có chắc muốn xóa tài khoản người dùng này?")) return;
+            $.post('@Url.Action("Delete", "TaiKhoanNguoiDung", new { area = "Admin" })', { id: id }, function (result) {
+                if (result.success) {
+                    toastr.success(result.message);
+                    reloadNguoiDungList();
+                } else {
+                    toastr.error(result.message);
+                }
+            });
+        }
+
+        function reloadNguoiDungList() {
+            $.get('@Url.Action("IndexPartial", "TaiKhoanNguoiDung", new { area = "Admin" })', function (data) {
+                $("#nguoiDungContainer").html(data);
+            });
+        }
+
+        // =================== PHÂN QUYỀN ===================
+        function openEditPhanQuyenModal(id, tenLoai) {
+            $.get('@Url.Action("EditPartial", "PhanQuyen", new { area = "Admin" })', { id: id }, function (data) {
+                $("#phanQuyenModalLabel").text("Phân quyền - " + tenLoai);
+                $("#phanQuyenModalBody").html(data);
+                $("#phanQuyenModal").modal("show");
+            });
+        }
+
+        function reloadPhanQuyenList() {
+            $.get('@Url.Action("IndexPartial", "PhanQuyen", new { area = "Admin" })', function (data) {
+                $("#phanQuyenContainer").html(data);
+            });
+        }
+    </script>
+}

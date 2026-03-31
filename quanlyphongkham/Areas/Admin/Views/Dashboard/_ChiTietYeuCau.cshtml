@@ -1,0 +1,118 @@
+﻿@model quanlyphongkham.Models.YeuCauDatLich
+
+<div class="container-fluid">
+    <h5>Thông tin yêu cầu</h5>
+    <table class="table table-bordered">
+        <tr>
+            <th>Họ tên</th>
+            <td>@Model.HoTen</td>
+        </tr>
+        <tr>
+            <th>Số điện thoại</th>
+            <td>@Model.SoDienThoai</td>
+        </tr>
+        <tr>
+            <th>Địa chỉ</th>
+            <td>@Model.DiaChi</td>
+        </tr>
+        <tr>
+            <th>Có Zalo</th>
+            <td>@(Model.CoZalo ? "Có" : "Không")</td>
+        </tr>
+        <tr>
+            <th>Ngày gửi</th>
+            <td>@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</td>
+        </tr>
+        <tr>
+            <th>Trạng thái</th>
+            <td>
+                @if (Model.TrangThai == "Chờ xử lý")
+                {
+                    <span class="badge bg-warning">@Model.TrangThai</span>
+                }
+                else if (Model.TrangThai == "Đã xử lý")
+                {
+                    <span class="badge bg-success">@Model.TrangThai</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">@Model.TrangThai</span>
+                }
+            </td>
+        </tr>
+    </table>
+
+    @if (Model.TrangThai == "Chờ xử lý")
+    {
+        <div class="d-flex justify-content-end gap-2">
+            <a href="@Url.Action("CreateFromYeuCau", "LichHen", new { area = "Admin", yeuCauId = Model.Id })" class="btn btn-success">
+                <i class="fas fa-calendar-plus me-1"></i>Tạo lịch hẹn
+            </a>
+            <a href="@Url.Action("CreateFromYeuCau", "HoSoBenhAn", new { area = "Admin", yeuCauId = Model.Id })" class="btn btn-primary">
+                <i class="fas fa-folder-open me-1"></i>Tạo hồ sơ
+            </a>
+            <button type="button" class="btn btn-info" onclick="luuBenhNhan(@Model.Id)">
+                <i class="fas fa-user-plus me-1"></i>Lưu bệnh nhân
+            </button>
+            <button type="button" class="btn btn-danger" onclick="huyYeuCau(@Model.Id)">
+                <i class="fas fa-trash-alt me-1"></i>Hủy
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-end">
+            <span class="badge bg-secondary">Đã xử lý</span>
+        </div>
+    }
+</div>
+
+<script>
+    function luuBenhNhan(id) {
+        $.ajax({
+            url: '@Url.Action("LuuBenhNhan", "YeuCauDatLich", new { area = "Admin" })',
+            type: 'POST',
+            data: {
+                id: id,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function (result) {
+                if (result.success) {
+                    toastr.success(result.message);
+                    $('#chiTietModal').modal('hide');
+                    location.reload();
+                } else {
+                    toastr.error(result.message);
+                }
+            },
+            error: function () {
+                toastr.error('Có lỗi xảy ra. Vui lòng thử lại.');
+            }
+        });
+    }
+
+    function huyYeuCau(id) {
+        if (confirm('Bạn có chắc muốn hủy yêu cầu này?')) {
+            $.ajax({
+                url: '@Url.Action("Huy", "YeuCauDatLich", new { area = "Admin" })',
+                type: 'POST',
+                data: {
+                    id: id,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                        $('#chiTietModal').modal('hide');
+                        location.reload();
+                    } else {
+                        toastr.error(result.message);
+                    }
+                },
+                error: function () {
+                    toastr.error('Có lỗi xảy ra. Vui lòng thử lại.');
+                }
+            });
+        }
+    }
+</script>

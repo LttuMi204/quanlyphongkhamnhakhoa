@@ -1,0 +1,52 @@
+﻿@model quanlyphongkham.Models.LichHen
+
+<div class="card border-warning shadow-sm rounded-4 mb-4">
+    <div class="card-header bg-warning bg-opacity-10 border-0 py-3">
+        <h6 class="m-0 fw-bold text-dark"><i class="fa-solid fa-calendar-plus me-2"></i>Đăng ký lịch khám mới</h6>
+    </div>
+    <div class="card-body p-4">
+        <form id="formNewLichHen" asp-controller="ProfileWeb" asp-action="CreateLichHen" method="post">
+            @Html.AntiForgeryToken()
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Người khám bệnh <span class="text-danger">*</span></label>
+                    <select asp-for="MaBenhNhan" class="form-select rounded-pill" asp-items="ViewBag.MaBenhNhan" required>
+                        <option value="">-- Chọn thành viên --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Dịch vụ mong muốn <span class="text-danger">*</span></label>
+                    <select asp-for="MaDichVu" class="form-select rounded-pill" asp-items="ViewBag.MaDichVu" required>
+                        <option value="">-- Chọn dịch vụ --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Ngày hẹn khám <span class="text-danger">*</span></label>
+                    <input asp-for="NgayHen" type="date" class="form-control rounded-pill" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Buổi khám <span class="text-danger">*</span></label>
+                    <select name="BuoiKham" class="form-select rounded-pill" required>
+                        <option value="Sáng">Sáng (08:00 - 12:00)</option>
+                        <option value="Chiều">Chiều (14:00 - 19:30)</option>
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold">Bác sĩ ưu tiên (Không bắt buộc)</label>
+                    <select asp-for="MaBacSi" class="form-select rounded-pill" asp-items="ViewBag.MaBacSi">
+                        <option value="">-- Phòng khám tự sắp xếp bác sĩ --</option>
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label small fw-bold">Lý do khám / Ghi chú</label>
+                    <textarea asp-for="LyDoKham" class="form-control rounded-4" rows="2" placeholder="Ví dụ: Tư vấn niềng răng..."></textarea>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light rounded-pill px-4" onclick="cancelDatLich()">Hủy bỏ</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnSubmitLich">XÁC NHẬN ĐĂNG KÝ</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "Bảng điều khiển";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    var userName = User.Identity.Name ?? "Quản trị viên";
+
+    // Cộng dồn tổng số yêu cầu chờ xử lý từ cả 2 nguồn (Có tài khoản + Vãng lai)
+    int tongYeuCau = (ViewBag.CountLichChoXacNhan ?? 0) + (ViewBag.CountYeuCauMoi ?? 0);
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex align-items-center justify-content-between mb-4 mt-3">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Chào mừng trở lại, @userName! 👋</h3>
+            <p class="text-secondary mb-0">Hôm nay bạn có những lịch hẹn cần xử lý.</p>
+        </div>
+        <div class="text-end d-none d-md-block">
+            <span class="badge bg-white shadow-sm text-dark p-2 rounded-3 border">
+                <i class="fas fa-calendar-day text-primary me-2"></i> @DateTime.Now.ToString("dddd, dd/MM/yyyy")
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden border-start border-info border-5 transition-hover">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="text-info fw-bold text-uppercase small">Thông báo đặt lịch</h6>
+                            <h2 class="fw-bold mb-0">@ViewBag.CountLichChoXacNhan <small class="fs-6 text-muted fw-normal">lượt mới</small></h2>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-user-check text-info fa-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted small">Lịch hẹn từ khách hàng đã có tài khoản.</p>
+                    <a href="/Admin/LichHen/DanhSachDatLich" class="btn btn-info w-100 rounded-pill fw-bold text-white shadow-sm py-2">
+                        XỬ LÝ NGAY <i class="fas fa-chevron-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden border-start border-primary border-5 transition-hover" style="border-left-color: #72a1ff !important;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="text-primary fw-bold text-uppercase small" style="color: #72a1ff !important;">Yêu cầu đặt lịch</h6>
+                            <h2 class="fw-bold mb-0">@ViewBag.CountYeuCauMoi <small class="fs-6 text-muted fw-normal">lượt mới</small></h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-paper-plane text-primary fa-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted small">Yêu cầu từ khách chưa có tài khoản.</p>
+                    <a href="/Admin/YeuCauDatLich/Index" class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm py-2" style="background-color: #72a1ff; border: none;">
+                        XỬ LÝ YÊU CẦU <i class="fas fa-chevron-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+<style>
+    .transition-hover {
+        transition: all 0.3s ease;
+    }
+
+        .transition-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+        }
+
+    .quick-link-item {
+        color: #4a5568;
+        font-weight: 500;
+        padding: 8px 15px;
+        border-radius: 10px;
+        transition: 0.2s;
+    }
+
+        .quick-link-item:hover {
+            background-color: #fff;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+    .container-fluid {
+        background: linear-gradient(to bottom, #f8f9fc, #ffffff);
+        min-height: 100vh;
+    }
+</style>

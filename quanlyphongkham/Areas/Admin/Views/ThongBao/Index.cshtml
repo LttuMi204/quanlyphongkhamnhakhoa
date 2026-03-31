@@ -1,0 +1,56 @@
+﻿@model IEnumerable<quanlyphongkham.Models.ThongBao>
+
+@{
+    ViewData["Title"] = "Danh sách thông báo";
+}
+
+<div class="card shadow mb-4">
+
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-bell me-2"></i>Danh sách thông báo
+        </h6>
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-bordered table-hover">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>Loại thông báo</th>
+                    <th>Nội dung</th>
+                    <th>Thời gian gửi</th>
+                    <th width="150">Trạng thái</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.LoaiThongBao</td>
+                        <td>@item.NoiDung</td>
+                        <td>@item.ThoiGianGui?.ToString("dd/MM/yyyy HH:mm")</td>
+
+                        <td>
+                            @if (item.TrangThai == "Đã gửi")
+                            {
+                                <span class="badge bg-success">Đã gửi</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    @item.TrangThai
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

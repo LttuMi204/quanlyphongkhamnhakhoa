@@ -1,0 +1,285 @@
+﻿@model IEnumerable<quanlyphongkham.Models.LichLamViec>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
+        <div class="col">
+            <div class="card stat-card-main shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center px-3">
+                    <div>
+                        <div class="stat-label-main">Lịch khám hôm nay</div>
+                        <div class="stat-number-main">@ViewBag.LichHenHomNay</div>
+                    </div>
+                    <i class="fas fa-calendar-day stat-icon-main"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card stat-card-main shadow-sm" style="border-left-color: var(--info) !important;">
+                <div class="card-body d-flex justify-content-between align-items-center px-3">
+                    <div>
+                        <div class="stat-label-main text-info">Bệnh nhân của tôi</div>
+                        <div class="stat-number-main">@ViewBag.BenhNhanCuaToi</div>
+                    </div>
+                    <i class="fas fa-user-md stat-icon-main"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card stat-card-main shadow-sm" style="border-left-color: var(--warning) !important;">
+                <div class="card-body d-flex justify-content-between align-items-center px-3">
+                    <div>
+                        <div class="stat-label-main text-warning">Lịch chờ duyệt</div>
+                        <div class="stat-number-main">@ViewBag.YeuCauCho</div>
+                    </div>
+                    <i class="fas fa-clock stat-icon-main"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 rounded-4 mb-4" style="height: 450px;">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-user-clock me-2"></i>Lịch trực tuần của tôi</h6>
+                    <button class="btn btn-sm btn-primary rounded-pill" onclick="showAddWorkModal()"><i class="fas fa-plus me-1"></i>Đăng ký ca</button>
+                </div>
+                <div class="card-body scroll-y">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Thứ</th>
+                                <th>Ca trực</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 2; i <= 8; i++)
+                            {
+                                var lich = Model.FirstOrDefault(l => l.Thu == i);
+                                <tr>
+                                    <td class="fw-bold">@(i == 8 ? "Chủ nhật" : "Thứ " + i)</td>
+                                    <td>
+                                        @if (lich != null)
+                                        {
+                                            <span class="badge bg-soft-primary text-primary border border-primary">@lich.CaLam</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Nghỉ trực</span>
+                                        }
+                                    </td>
+                                    <td><button class="btn btn-sm btn-outline-secondary border-0" onclick="quickEditWork(@i)"><i class="fas fa-edit"></i></button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 rounded-4 mb-4 bg-primary text-white p-4" style="height: 215px;">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="fw-bold"><i class="fas fa-bolt me-2"></i> Thao tác nhanh</h5>
+
+                    <button class="btn btn-sm btn-light rounded-pill fw-bold text-primary shadow-sm" title="Xem hồ sơ cá nhân" onclick="openMyProfileModal()">
+                        <i class="fas fa-user-md me-1"></i> Hồ sơ
+                    </button>
+                </div>
+
+                <button class="btn btn-light rounded-pill w-100 mb-3 text-start px-3 shadow-sm" onclick="openCreateLichHenDr()">
+                    <i class="fas fa-calendar-plus me-2 text-primary"></i> Tạo lịch hẹn tái khám
+                </button>
+                <div class="p-2 bg-white bg-opacity-10 rounded-3 border border-white border-opacity-25 small">
+                    <i class="fas fa-info-circle me-1"></i> Bác sĩ có thể tự bổ sung lịch hẹn cho bệnh nhân cũ.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalWork" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h6 class="modal-title"><i class="fas fa-calendar-alt me-2"></i>Đăng ký thời khóa biểu tuần</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <table class="table table-bordered text-center align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Ca Sáng <br><small class="text-muted">(07:30 - 12:00)</small></th>
+                            <th>Ca Chiều <br><small class="text-muted">(14:00 - 19:30)</small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 2; i <= 8; i++)
+                        {
+                            // Tự động lấy lịch cũ để tick sẵn vào ô
+                            var lichHienTai = Model.FirstOrDefault(l => l.Thu == i);
+                            bool checkSang = lichHienTai != null && (lichHienTai.CaLam == "Sáng" || lichHienTai.CaLam == "Cả ngày");
+                            bool checkChieu = lichHienTai != null && (lichHienTai.CaLam == "Chiều" || lichHienTai.CaLam == "Cả ngày");
+
+                            <tr>
+                                <td class="fw-bold">@(i == 8 ? "Chủ nhật" : "Thứ " + i)</td>
+                                <td>
+                                    <input class="form-check-input" style="transform: scale(1.5);" type="checkbox" name="caSang_@i" @(checkSang ? "checked" : "")>
+                                </td>
+                                <td>
+                                    <input class="form-check-input" style="transform: scale(1.5);" type="checkbox" name="caChieu_@i" @(checkChieu ? "checked" : "")>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer bg-light">
+                <button class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary rounded-pill px-4" onclick="saveWeeklySchedule()"><i class="fas fa-save me-1"></i>Lưu thời khóa biểu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mainModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-primary text-white py-2">
+                <h5 class="modal-title fw-bold" id="mainModalTitle">
+                    <i class="fas fa-calendar-plus me-2"></i>Tạo lịch tái khám
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="mainModalBody">
+                <div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i> Đang tải...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 1. HÀM MỞ FORM TẠO LỊCH HẸN
+        function openCreateLichHenDr() {
+            $('#mainModal').modal('show');
+
+            // Gắn đúng tiêu đề cho chức năng Lịch hẹn
+            $('#mainModalTitle').html('<i class="fas fa-calendar-plus me-2"></i>Tạo lịch hẹn tái khám');
+            $('#mainModalBody').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i> Đang tải form đặt lịch...</div>');
+
+            $.get('/Admin/LichHen/CreatePartial', function (data) {
+                $('#mainModalBody').html(data);
+                setTimeout(function () {
+                    var maBS = '@ViewBag.MaBacSiHienTai';
+                    if (maBS) {
+                        $('#hidMaBacSi').val(maBS);
+                        $('#divBacSi').closest('.col-md-6').hide();
+                        $('#zoneOverrideBacSi').hide();
+                    }
+                }, 300);
+            }).fail(function () {
+                $('#mainModalBody').html('<div class="alert alert-danger text-center">Lỗi khi tải biểu mẫu đặt lịch.</div>');
+            });
+        }
+
+        // 2. HÀM MỞ FORM HỒ SƠ BÁC SĨ
+        function openMyProfileModal() {
+            $('#mainModal').modal('show');
+
+            // Gắn đúng tiêu đề cho chức năng Hồ sơ
+            $('#mainModalTitle').html('<i class="fas fa-user-md me-2"></i>Hồ sơ Bác sĩ');
+            $('#mainModalBody').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i> Đang tải thông tin...</div>');
+
+            $.get('/bacsi/ho-so-cua-toi', function (data) {
+                $('#mainModalBody').html(data);
+            }).fail(function () {
+                $('#mainModalBody').html('<div class="alert alert-danger text-center">Lỗi khi tải hồ sơ.</div>');
+            });
+        }
+        function showAddWorkModal() {
+            $('#workThu').val('2'); // Gán mặc định là thứ 2 khi ấn "Đăng ký ca"
+            $('#modalWork').modal('show');
+        }
+
+        function quickEditWork(thu) {
+            $('#workThu').val(thu);
+            $('#modalWork').modal('show');
+        }
+
+        function saveWeeklySchedule() {
+            let scheduleData = [];
+
+            // Duyệt từ Thứ 2 đến Chủ nhật (2 đến 8)
+            for (let i = 2; i <= 8; i++) {
+                let isSang = $(`input[name="caSang_${i}"]`).is(':checked');
+                let isChieu = $(`input[name="caChieu_${i}"]`).is(':checked');
+
+                if (isSang && isChieu) {
+                    scheduleData.push({ Thu: i, CaLam: 'Cả ngày' });
+                } else if (isSang) {
+                    scheduleData.push({ Thu: i, CaLam: 'Sáng' });
+                } else if (isChieu) {
+                    scheduleData.push({ Thu: i, CaLam: 'Chiều' });
+                }
+            }
+
+            // Đổi nút thành Đang lưu...
+            let btn = $('#modalWork .btn-primary');
+            let oldText = btn.html();
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang lưu...');
+
+            // Gửi mảng JSON lên Server
+            $.ajax({
+                url: '/bacsi/cap-nhat-lich-tuan',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(scheduleData),
+                success: function (res) {
+                    if (res.success) {
+                        toastr.success(res.message);
+                        location.reload(); // Tải lại trang để hiện lịch mới
+                    } else {
+                        toastr.error(res.message);
+                        btn.prop('disabled', false).html(oldText);
+                    }
+                },
+                error: function () {
+                    toastr.error('Lỗi kết nối máy chủ!');
+                    btn.prop('disabled', false).html(oldText);
+                }
+            });
+        }
+
+        function openCreateLichHenDr() {
+            $('#mainModal').modal('show');
+            $('#mainModalBody').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i> Đang tải form đặt lịch...</div>');
+
+            $.get('/Admin/LichHen/CreatePartial', function (data) {
+                $('#mainModalBody').html(data);
+                setTimeout(function () {
+                    var maBS = '@ViewBag.MaBacSiHienTai';
+                    if (maBS) {
+                        $('#hidMaBacSi').val(maBS);
+                        $('#divBacSi').closest('.col-md-6').hide();
+                    }
+                }, 300);
+            }).fail(function () {
+                $('#mainModalBody').html('<div class="alert alert-danger text-center">Lỗi khi tải biểu mẫu đặt lịch.</div>');
+            });
+        }
+
+        function searchBN() {
+            var s = $('#txtSearchBN').val();
+            if (!s) return;
+            $('#quickPatientResult').html('<div class="text-center py-2"><i class="fas fa-spinner fa-spin text-primary"></i> Đang tìm...</div>');
+            $.get('/bacsi/benh-nhan-cua-toi', { search: s }, function (data) {
+                $('#quickPatientResult').html(data);
+            });
+        }
+    </script>
+}

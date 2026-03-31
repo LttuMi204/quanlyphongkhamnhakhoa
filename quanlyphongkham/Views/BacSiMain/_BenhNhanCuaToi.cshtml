@@ -1,0 +1,37 @@
+﻿@model IEnumerable<quanlyphongkham.Models.BenhNhan>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <input type="text" id="searchBN_Dr" class="form-control rounded-pill border-primary" placeholder="Tìm tên hoặc SĐT..." oninput="loadMyPatients(this.value)">
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Họ tên</th>
+                <th>SĐT</th>
+                <th>Giới tính</th>
+                <th>Lần khám cuối</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bn in Model)
+            {
+                <tr>
+                    <td class="fw-bold text-primary">@bn.HoTen</td>
+                    <td>@bn.SoDienThoai</td>
+                    <td>@bn.GioiTinh</td>
+                    <td class="small text-muted">@bn.NgayDangKy?.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info rounded-pill" onclick="viewChiTiet(@bn.MaBenhNhan)">
+                            <i class="fas fa-file-medical me-1"></i>Xem hồ sơ
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

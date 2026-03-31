@@ -1,0 +1,81 @@
+﻿@model quanlyphongkham.Models.YeuCauDatLich
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden animate__animated animate__fadeIn">
+    <div class="card-header border-0 py-3" style="background-color: #72a1ff; color: white;">
+        <h6 class="mb-0 fw-bold"><i class="fas fa-file-invoice me-2"></i>YÊU CẦU XÁC NHẬN #@Model.Id</h6>
+    </div>
+
+    <div class="card-body p-4">
+        <div class="mb-4">
+            <label class="small text-muted d-block mb-1 text-uppercase fw-bold">Thông tin khách gửi yêu cầu</label>
+            <div class="d-flex align-items-center p-3 rounded-4" style="background-color: #f0f7ff;">
+                <div class="bg-white text-primary rounded-circle p-3 me-3 shadow-sm" style="color: #72a1ff !important;">
+                    <i class="fas fa-paper-plane fa-lg"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">@Model.HoTen.ToUpper()</h5>
+                    <span class="fw-bold" style="color: #72a1ff;">SĐT: @Model.SoDienThoai</span>
+                    @if (Model.CoZalo)
+                    {
+                        <span class="badge bg-info bg-opacity-10 text-info ms-2">Có Zalo</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-12">
+                <div class="p-3 rounded-4 border h-100 bg-light">
+                    <label class="small text-muted fw-bold">ĐỊA CHỈ KHÁCH HÀNG</label>
+                    <div class="mt-1 text-dark">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>@(Model.DiaChi ?? "Không cung cấp")
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 rounded-4 border">
+                    <label class="small text-muted fw-bold text-uppercase">Ngày gửi yêu cầu</label>
+                    <div class="mt-1 fw-bold">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 rounded-4 border">
+                    <label class="small text-muted fw-bold text-uppercase">Trạng thái hiện tại</label>
+                    <div class="mt-1">
+                        <span class="badge @(Model.TrangThai == "Chờ xử lý" ? "bg-warning text-dark" : "bg-success") rounded-pill px-3">
+                            @Model.TrangThai
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info border-0 rounded-4 py-3 small shadow-sm">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Quy trình xử lý:</strong> Nhấn "Xác nhận & Chuyển lịch" để gọi điện cho khách, sau đó hệ thống sẽ tự động điền tên khách vào Form xếp lịch mới.
+        </div>
+
+        <div class="row g-2">
+            @if (Model.TrangThai == "Chờ xử lý")
+            {
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-outline-secondary w-100 py-2 rounded-pill fw-bold" onclick="huyYeuCau(@Model.Id)">
+                        HỦY BỎ
+                    </button>
+                </div>
+                <div class="col-md-8">
+                    <a href="@Url.Action("Duyet", "YeuCauDatLich", new { area = "Admin", id = Model.Id })"
+                       class="btn btn-primary w-100 py-2 rounded-pill fw-bold shadow-sm" style="background-color: #72a1ff; border: none;">
+                        XÁC NHẬN & CHUYỂN LỊCH <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="col-12">
+                    <button class="btn btn-secondary w-100 rounded-pill py-2 fw-bold" disabled>YÊU CẦU ĐÃ ĐƯỢC XỬ LÝ</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

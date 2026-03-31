@@ -1,0 +1,320 @@
+﻿@{
+    ViewData["Title"] = "Quản Lý Lịch Khám & Ghế";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .mini-stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 10px 14px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .mini-stat-num {
+        font-size: 1.4rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .mini-stat-label {
+        font-size: 0.7rem;
+        color: #9ca3af;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-top: 4px;
+    }
+</style>
+
+<div class="container-fluid py-3">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800 fw-bold">
+            <i class="fas fa-calendar-alt me-2 text-primary"></i>@ViewData["Title"]
+        </h1>
+        <button class="btn btn-primary shadow-sm btn-add-main fw-bold" onclick="openCreateLichHen()">
+            <i class="fas fa-plus-circle me-1"></i> Thêm Lịch Mới
+        </button>
+    </div>
+    
+    <ul class="nav nav-tabs border-bottom-0" id="lichHenTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active fw-bold" data-bs-toggle="tab" data-bs-target="#tab-lich-tuan" type="button" onclick="loadLichTuan()">
+                <i class="fas fa-calendar-week me-2"></i>Bảng Lịch Tuần
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#tab-danh-sach" type="button" onclick="loadDanhSachLich()">
+                <i class="fas fa-list-check me-2"></i>Danh Sách Khám
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold" data-bs-toggle="tab" data-bs-target="#tab-ghe" type="button" onclick="loadDanhSachGhe()">
+                <i class="fas fa-chair me-2"></i>Quản Lý Ghế
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content card shadow-sm border-top-0 p-4 rounded-3 rounded-top-0" id="lichHenTabContent">
+        <div class="tab-pane fade show active" id="tab-lich-tuan" role="tabpanel">
+            <div id="lichTuanContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tab-danh-sach" role="tabpanel">
+            <div id="danhSachContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tab-ghe" role="tabpanel">
+            <div id="gheContainer">
+                <div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mainModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalTitle">Cập nhật</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="baoTriModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-tools me-2"></i>Quản lý bảo trì ghế</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="baoTriMaGhe" />
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Từ ngày</label>
+                    <input type="date" id="baoTriTuNgay" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Đến ngày</label>
+                    <input type="date" id="baoTriDenNgay" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Lý do bảo trì</label>
+                    <textarea id="baoTriMoTa" rows="3" class="form-control"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger fw-bold" onclick="xoaBaoTri()">Xóa bảo trì</button>
+                <button type="button" class="btn btn-primary fw-bold" onclick="luuBaoTri()">Lưu thiết lập</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentViewDate = new Date();
+        var searchLichTimeout;
+
+        $(document).ready(function () {
+            // Mặc định gọi hàm load Tab 1 khi trang vừa tải xong
+            loadLichTuan();
+
+            // Nhúng logic auto mở form kẹp luồng online (nếu có)
+            var openModalYeuCauId = '@TempData["OpenModal_YeuCauId"]';
+            var openModalLoaiKhach = '@TempData["OpenModal_LoaiKhach"]';
+            var openModalHoTen = '@TempData["OpenModal_HoTen"]';
+            var openModalSDT = '@TempData["OpenModal_SDT"]';
+
+            if (openModalYeuCauId && openModalYeuCauId !== '') {
+                $('#modalTitle').html('<i class="fas fa-calendar-plus me-2"></i>Thêm Lịch Mới (Online)');
+                $('#modalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+                $('#mainModal').modal('show');
+                $.get('@Url.Action("CreatePartial", "LichHen", new { area = "Admin" })',
+                    {
+                        yeuCauId: openModalYeuCauId,
+                        loaiKhach: openModalLoaiKhach,
+                        hoTenOnline: openModalHoTen,
+                        sdtOnline: openModalSDT
+                    },
+                    function (html) {
+                        $('#modalBody').html(html);
+                    });
+            }
+        });
+
+        function formatToQueryDate(dateObj) {
+            return dateObj.getFullYear() + '-' +
+                String(dateObj.getMonth() + 1).padStart(2, '0') + '-' +
+                String(dateObj.getDate()).padStart(2, '0');
+        }
+
+        // ===================== TAB 1: LỊCH TUẦN =====================
+        function loadLichTuan(targetDate) {
+            if (targetDate) {
+                currentViewDate = new Date(targetDate);
+            }
+            $('#lichTuanContainer').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+            let dateStr = formatToQueryDate(currentViewDate);
+
+            $.get('@Url.Action("LichTuanPartial", "LichHen", new { area = "Admin" })', { ngay: dateStr }, function (data) {
+                $('#lichTuanContainer').html(data);
+            }).fail(function () {
+                toastr.error('Lỗi tải dữ liệu lịch tuần');
+            });
+        }
+
+        // ===================== TAB 2: DANH SÁCH LỊCH HẸN =====================
+        function loadDanhSachLich() {
+            $('#danhSachContainer').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+
+            var formData = $('#formFilterLich').length ? $('#formFilterLich').serialize() : "";
+
+            $.get('@Url.Action("DanhSachPartial", "LichHen", new { area = "Admin" })', formData, function (data) {
+                $('#danhSachContainer').html(data);
+            }).fail(function () {
+                toastr.error('Lỗi tải dữ liệu danh sách khám');
+            });
+        }
+
+        // ===================== TAB 3: QUẢN LÝ GHẾ =====================
+        function loadDanhSachGhe() {
+            $('#gheContainer').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+
+            $.get('@Url.Action("DanhSachGhePartial", "Ghe", new { area = "Admin" })', function (data) {
+                $('#gheContainer').html(data);
+            }).fail(function () {
+                toastr.error('Lỗi tải dữ liệu quản lý ghế');
+            });
+        }
+
+        // ===================== MODAL THAO TÁC LỊCH HẸN =====================
+        function openCreateLichHen() {
+            $('#modalTitle').html('<i class="fas fa-calendar-plus me-2"></i>Thêm Lịch Hẹn Mới');
+            $('#modalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+            $('#mainModal').modal('show');
+            $.get('@Url.Action("CreatePartial", "LichHen", new { area = "Admin" })', function (data) {
+                $('#modalBody').html(data);
+            }).fail(function () {
+                toastr.error('Lỗi tải form tạo lịch');
+            });
+        }
+
+        function editLichHen(id) {
+            $('#modalTitle').html('<i class="fas fa-edit me-2"></i>Cập nhật Lịch Hẹn');
+            $('#modalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+            $('#mainModal').modal('show');
+            $.get('@Url.Action("EditPartial", "LichHen", new { area = "Admin" })/' + id, function (data) {
+                $('#modalBody').html(data);
+            }).fail(function () {
+                toastr.error('Lỗi tải form cập nhật lịch');
+            });
+        }
+
+        // ===================== MODAL THAO TÁC GHẾ NHA KHOA =====================
+        function openCreateGheModal() {
+            $('#modalTitle').html('<i class="fas fa-plus me-2"></i>Thêm Ghế Nha Khoa');
+            $('#modalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+            $('#mainModal').modal('show');
+            $.get('@Url.Action("CreatePartial", "Ghe", new { area = "Admin" })', function (data) {
+                $('#modalBody').html(data);
+            }).fail(function () {
+                toastr.error('Không thể tải biểu mẫu ghế.');
+            });
+        }
+
+        function openEditGheModal(id) {
+            $('#modalTitle').html('<i class="fas fa-edit me-2"></i>Cập nhật Ghế');
+            $('#modalBody').html('<div class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+            $('#mainModal').modal('show');
+            $.get('@Url.Action("EditPartial", "Ghe", new { area = "Admin" })/' + id, function (data) {
+                $('#modalBody').html(data);
+            }).fail(function () {
+                toastr.error('Lỗi tải dữ liệu ghế!');
+            });
+        }
+
+        function deleteGhe(id) {
+            if (!confirm('Bạn có chắc muốn xóa ghế này khỏi hệ thống?')) return;
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Delete", "Ghe", new { area = "Admin" })',
+                data: { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val() },
+                success: function (res) {
+                    if (res.success) {
+                        toastr.success(res.message);
+                        loadDanhSachGhe();
+                    } else {
+                        toastr.error(res.message);
+                    }
+                }
+            });
+        }
+
+        // --- Logic lưu/xóa bảo trì ---
+        function luuBaoTri() {
+            var maGhe = $('#baoTriMaGhe').val();
+            var tuNgay = $('#baoTriTuNgay').val();
+            var denNgay = $('#baoTriDenNgay').val();
+            var moTa = $('#baoTriMoTa').val();
+
+            if (!tuNgay || !denNgay) {
+                toastr.error('Vui lòng chọn đủ ngày bắt đầu và kết thúc!');
+                return;
+            }
+            if (new Date(denNgay) < new Date(tuNgay)) {
+                toastr.error('Ngày kết thúc phải sau ngày bắt đầu!');
+                return;
+            }
+
+            $.post('@Url.Action("CapNhatBaoTri", "Ghe", new { area = "Admin" })', {
+                maGhe: maGhe,
+                ngayBatDau: tuNgay,
+                ngayKetThuc: denNgay,
+                moTa: moTa,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            }, function (res) {
+                if (res.success) {
+                    $('#baoTriModal').modal('hide');
+                    toastr.success(res.message);
+                    loadDanhSachGhe(); // Reload tab 3
+
+                    // Reload cả 2 tab Lịch Khám nếu có lịch bị dời về Null
+                    if (typeof loadLichTuan === 'function') loadLichTuan();
+                    if (typeof loadDanhSachLich === 'function') loadDanhSachLich();
+                } else {
+                    toastr.error(res.message);
+                }
+            });
+        }
+
+        function xoaBaoTri() {
+            if (!confirm('Xóa toàn bộ lịch bảo trì của ghế này?')) return;
+            var maGhe = $('#baoTriMaGhe').val();
+
+            $.post('@Url.Action("XoaBaoTri", "Ghe", new { area = "Admin" })', {
+                maGhe: maGhe,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            }, function (res) {
+                if (res.success) {
+                    $('#baoTriModal').modal('hide');
+                    toastr.success(res.message);
+                    loadDanhSachGhe();
+                } else {
+                    toastr.error(res.message);
+                }
+            });
+        }
+    </script>
+}

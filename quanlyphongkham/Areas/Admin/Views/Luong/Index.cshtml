@@ -1,0 +1,119 @@
+﻿@model IEnumerable<quanlyphongkham.Areas.Admin.ViewModels.LuongViewModel>
+@{
+    ViewData["Title"] = "Bảng lương nhân viên";
+    int thang = ViewBag.Thang;
+    int nam = ViewBag.Nam;
+    decimal tongLuong = Model.Sum(m => m.TongLuong);
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center flex-wrap">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-money-bill-wave me-2"></i>Bảng thanh toán tiền lương tổng hợp
+        </h6>
+        <div>
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <select name="thang" class="form-select">
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <option value="@i" selected="@(i == thang)">Tháng @i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <select name="nam" class="form-select">
+                        @for (int i = DateTime.Now.Year; i >= 2020; i--)
+                        {
+                            <option value="@i" selected="@(i == nam)">Năm @i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-info">Xem</button>
+                </div>
+            </form>
+        </div>
+        <div>
+            <form asp-action="CalculateAll" method="post" class="d-inline">
+                <input type="hidden" name="thang" value="@thang" />
+                <input type="hidden" name="nam" value="@nam" />
+                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Tính toán lại hoa hồng dựa trên doanh số?')">
+                    <i class="fas fa-calculator"></i> Tính toán
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <h5 class="mb-3">Tháng @thang năm @nam</h5>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>STT</th>
+                        <th>Họ và tên</th>
+                        <th>Chức vụ</th>
+                        <th>Lương chính</th>
+                        <th>% Hoa hồng</th>
+                        <th>Tiền hoa hồng</th>
+                        <th>Thưởng</th>
+                        <th>Khấu trừ</th>
+                        <th>Tổng lương</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int stt = 1;
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@(stt++)</td>
+                            <td><strong>@item.HoTen</strong></td>
+                            <td>@item.ChucVu</td>
+                            <td class="text-end">@item.LuongCoBan.ToString("N0") đ</td>
+                            <td class="text-end">@item.PhanTramHoaHong.ToString("F2") %</td>
+                            <td class="text-end">@item.SoTienHoaHong.ToString("N0") đ</td>
+                            <td class="text-end">@item.Thuong.ToString("N0") đ</td>
+                            <td class="text-end">@item.KhauTru.ToString("N0") đ</td>
+                            <td class="text-end fw-bold text-primary">@item.TongLuong.ToString("N0") đ</td>
+                            <td>
+                                @if (item.TrangThai == "Đã thanh toán")
+                                {
+                                    <span class="badge bg-success">Đã thanh toán</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">Chờ thanh toán</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.MaLuong" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-info">
+                    <tr>
+                        <td colspan="8" class="text-end fw-bold">Tổng cộng:</td>
+                        <td class="text-end fw-bold">@tongLuong.ToString("N0") đ</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

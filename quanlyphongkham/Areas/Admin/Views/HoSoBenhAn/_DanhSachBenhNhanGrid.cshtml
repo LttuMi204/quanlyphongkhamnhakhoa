@@ -1,0 +1,95 @@
+﻿@model IEnumerable<quanlyphongkham.Models.BenhNhan>
+
+@{
+    string search = ViewBag.Search ?? "";
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header py-3 bg-white d-flex justify-content-between align-items-center flex-wrap">
+        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-folder-open me-2"></i>Kho hồ sơ bệnh án</h6>
+    </div>
+    <div class="card-body bg-light">
+        <form class="row g-2 mb-4" onsubmit="event.preventDefault(); loadTabHoSo(1);">
+            <div class="col-md-6">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="searchGrid" class="form-control border-start-0 pl-0"
+                           placeholder="Nhập tên bệnh nhân hoặc số điện thoại..."
+                           value="@search"
+                           oninput="debounceSearchGrid()">
+                    <button class="btn btn-primary" type="button" onclick="loadTabHoSo(1)">Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="row" id="benhNhanGridArea">
+            @if (Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm border-0 stat-card"
+                             onclick="loadHoSoByBenhNhan(@item.MaBenhNhan)"
+                             style="cursor:pointer;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title fw-bold text-primary mb-0 text-truncate" title="@item.HoTen">@item.HoTen</h6>
+                                    <span class="badge bg-light text-dark border">#@item.MaBenhNhan</span>
+                                </div>
+                                <hr class="my-2" />
+                                <p class="card-text small mb-2 text-muted">
+                                    <i class="fas fa-venus-mars me-2 w-15px text-center"></i> @(item.GioiTinh ?? "Chưa rõ") | @(item.NgaySinh?.ToString("dd/MM/yyyy") ?? "N/A")
+                                </p>
+                                <p class="card-text small mb-2 text-muted">
+                                    <i class="fas fa-phone-alt me-2 w-15px text-center"></i> <strong>@item.SoDienThoai</strong>
+                                </p>
+                                <p class="card-text small mb-2 text-muted">
+                                    <i class="fas fa-user-circle me-2 w-15px text-center"></i>
+                                    @if (item.TaiKhoanNguoiDung != null)
+                                    {
+                                        <span class="badge bg-success">@item.TaiKhoanNguoiDung.TenDangNhap</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary fst-italic">Không liên kết</span>
+                                    }
+                                </p>
+                            </div>
+                            <div class="card-footer bg-white border-top-0 pt-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted">Số lượt khám:</span>
+                                    <span class="badge rounded-pill @(item.HoSoBenhAns?.Count > 0 ? "bg-info text-dark" : "bg-secondary") px-3">
+                                        @(item.HoSoBenhAns?.Count ?? 0)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-folder-minus fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">Không tìm thấy hồ sơ nào khớp với điều kiện.</h6>
+                </div>
+            }
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <nav class="mt-2">
+                <ul class="pagination justify-content-center mb-0">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" href="javascript:void(0)" onclick="loadTabHoSo(@i)">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
+</div>

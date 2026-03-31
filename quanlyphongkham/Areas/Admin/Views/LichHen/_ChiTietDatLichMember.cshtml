@@ -1,0 +1,102 @@
+﻿@model quanlyphongkham.Models.LichHen
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden animate__animated animate__fadeIn">
+    <div class="card-header border-0 py-3" style="background-color: #72a1ff; color: white;">
+        <h6 class="mb-0 fw-bold"><i class="fas fa-file-invoice me-2"></i>XÁC NHẬN ĐẶT LỊCH THÀNH VIÊN #@Model.MaLichHen</h6>
+    </div>
+
+    <div class="card-body p-4">
+        <div class="mb-4">
+            <label class="small text-muted d-block mb-1 text-uppercase fw-bold">Thông tin khách gửi yêu cầu</label>
+            <div class="d-flex align-items-center p-3 rounded-4" style="background-color: #f0f7ff;">
+                <div class="bg-white text-primary rounded-circle p-3 me-3 shadow-sm" style="color: #72a1ff !important;">
+                    <i class="fas fa-user-check fa-lg"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">@Model.BenhNhan.HoTen.ToUpper()</h5>
+                    <span class="fw-bold" style="color: #72a1ff;">SĐT: @Model.BenhNhan.SoDienThoai</span>
+                    <span class="badge bg-success bg-opacity-10 text-success ms-2 small">Đã có tài khoản</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-12">
+                <div class="p-3 rounded-4 border h-100 bg-light">
+                    <label class="small text-muted fw-bold">DỊCH VỤ ĐĂNG KÝ</label>
+                    <div class="mt-1 text-dark fw-bold">
+                        <i class="fas fa-stethoscope text-primary me-2"></i>@(Model.DichVu?.TenDichVu ?? "Khám tổng quát")
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 rounded-4 border">
+                    <label class="small text-muted fw-bold text-uppercase">Ngày gửi yêu cầu</label>
+                    <div class="mt-1 fw-bold">@Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 rounded-4 border">
+                    <label class="small text-muted fw-bold text-uppercase">Thời gian hẹn</label>
+                    <div class="mt-1 text-danger fw-bold">@Model.NgayHen.ToString("dd/MM/yyyy") - @Model.GioHen.ToString(@"hh\:mm")</div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="p-3 rounded-4 border bg-light">
+                    <label class="small text-muted fw-bold text-uppercase">Ghi chú từ khách</label>
+                    <div class="mt-1 small italic text-muted">
+                        " @(string.IsNullOrEmpty(Model.GhiChu) ? "Không có ghi chú" : Model.GhiChu) "
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info border-0 rounded-4 py-3 small shadow-sm">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Quy trình:</strong> Bà kiểm tra lịch bác sĩ xem ca này có trống không, nếu ổn thì bấm <b>Duyệt lịch</b> để xác nhận cho khách nhé.
+        </div>
+
+        <div class="row g-2">
+            @if (Model.TrangThai == "Chờ xác nhận")
+            {
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-outline-secondary w-100 py-2 rounded-pill fw-bold"
+                            onclick="xuLyLichMember(@Model.MaLichHen, 'Huy')">
+                        TỪ CHỐI
+                    </button>
+                </div>
+                <div class="col-md-8">
+                    <button type="button" class="btn btn-primary w-100 py-2 rounded-pill fw-bold shadow-sm"
+                            style="background-color: #72a1ff; border: none;"
+                            onclick="xuLyLichMember(@Model.MaLichHen, 'Duyet')">
+                        XÁC NHẬN DUYỆT LỊCH <i class="fas fa-check-circle ms-2"></i>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="alert alert-secondary text-center w-100 rounded-pill py-2 fw-bold mb-0">
+                        <i class="fas fa-lock me-2"></i>YÊU CẦU NÀY ĐÃ ĐƯỢC XỬ LÝ (@Model.TrangThai.ToUpper())
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function xuLyLichMember(id, action) {
+        let msg = action === 'Duyet' ? "Xác nhận DUYỆT lịch hẹn này?" : "Xác nhận TỪ CHỐI lịch hẹn này?";
+        if (!confirm(msg)) return;
+
+        $.post('/Admin/LichHen/XuLyNhanhMember', { id: id, tacVu: action }, function (res) {
+            if (res.success) {
+                toastr.success(res.message);
+                location.reload();
+            } else {
+                toastr.error(res.message);
+            }
+        });
+    }
+</script>
